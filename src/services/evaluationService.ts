@@ -8,10 +8,10 @@ import {
 
 export class EvaluationService {
   private readonly platformWeights: PlatformWeight = {
-    tabelog: 0.35,      // 食べログ: 高い信頼性、日本での評価基準
-    hotpepper: 0.15,    // ホットペッパー: 予約情報と空席情報
-    googlePlaces: 0.30, // Google: グローバル基準、レビュー数多
+    googlePlaces: 0.35, // Google: グローバル基準、レビュー数多、高い可用性
+    tabelog: 0.30,      // 食べログ: 高い信頼性、日本での評価基準
     retty: 0.20,        // Retty: 実名レビュー、推奨率
+    hotpepper: 0.15,    // ホットペッパー: 予約情報と空席情報
   };
 
   public calculateTotalScore(

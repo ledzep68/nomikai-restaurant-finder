@@ -6,12 +6,31 @@ export interface SanitizedRequest extends Request {
 
 const sanitizeString = (str: string): string => {
   return str
-    .replace(/[<>]/g, '') // Remove < and >
+    .replace(/[<>"'&]/g, (match) => {
+      // HTML entity encoding for security
+      const escapeMap: { [key: string]: string } = {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '&': '&amp;',
+      };
+      return escapeMap[match];
+    })
     .replace(/javascript:/gi, '') // Remove javascript:
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .replace(/script/gi, '') // Remove script tags
+    .replace(/data:/gi, '') // Remove data: URIs
+    .replace(/vbscript:/gi, '') // Remove vbscript:
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/gi, '') // Remove script tags
+    .replace(/<\s*iframe[^>]*>.*?<\s*\/\s*iframe\s*>/gi, '') // Remove iframe tags
+    .replace(/expression\s*\(/gi, '') // Remove CSS expression
+    .replace(/url\s*\(/gi, '') // Remove CSS url()
+    .replace(/import\s+/gi, '') // Remove import statements
+    .replace(/eval\s*\(/gi, '') // Remove eval
+    .replace(/setTimeout\s*\(/gi, '') // Remove setTimeout
+    .replace(/setInterval\s*\(/gi, '') // Remove setInterval
+    .replace(/Function\s*\(/gi, '') // Remove Function constructor
     .trim();
-};
 
 const sanitizeValue = (value: unknown): unknown => {
   if (typeof value === 'string') {
