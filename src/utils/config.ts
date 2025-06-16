@@ -28,6 +28,32 @@ interface Config {
   cors: {
     allowedOrigins: string[];
   };
+  externalApis: {
+    tabelog: {
+      endpoint: string;
+      apiKey: string;
+      rateLimit: number;
+      timeout: number;
+    };
+    hotpepper: {
+      endpoint: string;
+      apiKey: string;
+      rateLimit: number;
+      timeout: number;
+    };
+    googlePlaces: {
+      endpoint: string;
+      apiKey: string;
+      rateLimit: number;
+      timeout: number;
+    };
+    retty: {
+      endpoint: string;
+      apiKey: string;
+      rateLimit: number;
+      timeout: number;
+    };
+  };
 }
 
 const getEnvVar = (name: string, defaultValue?: string): string => {
@@ -63,5 +89,31 @@ export const config: Config = {
   },
   cors: {
     allowedOrigins: getEnvVar('ALLOWED_ORIGINS', 'http://localhost:3000').split(','),
+  },
+  externalApis: {
+    tabelog: {
+      endpoint: getEnvVar('TABELOG_API_ENDPOINT', 'https://api.tabelog.com/v1'),
+      apiKey: getEnvVar('TABELOG_API_KEY', ''),
+      rateLimit: parseInt(getEnvVar('TABELOG_RATE_LIMIT', '60'), 10),
+      timeout: parseInt(getEnvVar('TABELOG_TIMEOUT', '10000'), 10),
+    },
+    hotpepper: {
+      endpoint: getEnvVar('HOTPEPPER_API_ENDPOINT', 'https://webservice.recruit.co.jp/hotpepper'),
+      apiKey: getEnvVar('HOTPEPPER_API_KEY', ''),
+      rateLimit: parseInt(getEnvVar('HOTPEPPER_RATE_LIMIT', '100'), 10),
+      timeout: parseInt(getEnvVar('HOTPEPPER_TIMEOUT', '10000'), 10),
+    },
+    googlePlaces: {
+      endpoint: getEnvVar('GOOGLE_PLACES_API_ENDPOINT', 'https://maps.googleapis.com/maps/api/place'),
+      apiKey: getEnvVar('GOOGLE_PLACES_API_KEY', ''),
+      rateLimit: parseInt(getEnvVar('GOOGLE_PLACES_RATE_LIMIT', '100'), 10),
+      timeout: parseInt(getEnvVar('GOOGLE_PLACES_TIMEOUT', '10000'), 10),
+    },
+    retty: {
+      endpoint: getEnvVar('RETTY_API_ENDPOINT', 'https://api.retty.me/v1'),
+      apiKey: getEnvVar('RETTY_API_KEY', ''),
+      rateLimit: parseInt(getEnvVar('RETTY_RATE_LIMIT', '60'), 10),
+      timeout: parseInt(getEnvVar('RETTY_TIMEOUT', '10000'), 10),
+    },
   },
 };

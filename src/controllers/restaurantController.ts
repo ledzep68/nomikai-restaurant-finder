@@ -33,33 +33,72 @@ const handleValidationErrors = (req: Request, res: Response, next: Function): vo
 };
 
 router.get('/search', validateSearch, handleValidationErrors, optionalAuth, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const { genre, location, priceRange, limit, offset } = req.query;
+  const { genre, location, priceRange, limit, offset, useIntegrated } = req.query;
   
   const userSession = req.user?.userId.toString() || req.ip || 'anonymous';
 
-  const restaurants = await restaurantService.searchRestaurants(
-    {
-      genre: genre as string,
-      location: location as string,
-      priceRange: priceRange as string,
-      limit: limit as number,
-      offset: offset as number,
-    },
-    userSession
-  );
+  // Use integrated search by default, fallback to local if requested or if location is missing
+  const shouldUseIntegrated = useIntegrated !== 'false' && location;
 
-  res.status(200).json({
-    status: 'success',
-    message: 'Restaurants retrieved successfully',
-    data: {
-      restaurants,
-      pagination: {
-        limit: limit || 20,
-        offset: offset || 0,
-        total: restaurants.length,
+  if (shouldUseIntegrated) {
+    const result = await restaurantService.searchRestaurantsIntegrated(
+      {
+        genre: genre as string,
+        location: location as string,
+        priceRange: priceRange as string,
+        limit: limit as number,
+        offset: offset as number,
       },
-    },
-  });
+      userSession
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Restaurants retrieved successfully via integrated search',
+      data: {
+        restaurants: result.restaurants,
+        pagination: {
+          limit: limit || 20,
+          offset: offset || 0,
+          total: result.totalAvailable,
+        },
+        meta: {
+          platformsUsed: result.platformsUsed,
+          searchTime: result.searchTime,
+          cached: result.cached,
+          integratedSearch: true,
+        },
+      },
+    });
+  } else {
+    const restaurants = await restaurantService.searchRestaurants(
+      {
+        genre: genre as string,
+        location: location as string,
+        priceRange: priceRange as string,
+        limit: limit as number,
+        offset: offset as number,
+      },
+      userSession
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Restaurants retrieved successfully via local search',
+      data: {
+        restaurants,
+        pagination: {
+          limit: limit || 20,
+          offset: offset || 0,
+          total: restaurants.length,
+        },
+        meta: {
+          platformsUsed: ['local'],
+          integratedSearch: false,
+        },
+      },
+    });
+  }
 }));
 
 router.get('/:id', validateRestaurantId, handleValidationErrors, asyncHandler(async (req: Request, res: Response) => {
