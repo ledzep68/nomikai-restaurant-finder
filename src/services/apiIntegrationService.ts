@@ -1,7 +1,5 @@
-import { TabelogApiClient } from './externalApi/tabelogApiClient';
 import { HotpepperApiClient } from './externalApi/hotpepperApiClient';
 import { GooglePlacesApiClient } from './externalApi/googlePlacesApiClient';
-import { RettyApiClient } from './externalApi/rettyApiClient';
 import { EvaluationService } from './evaluationService';
 import { CacheService } from './cacheService';
 import { NormalizedRestaurant } from '@/types/externalApi';
@@ -19,21 +17,37 @@ export interface IntegratedSearchResult {
   platformsUsed: string[];
   searchTime: number;
   cached: boolean;
+  attributions: {
+    [platform: string]: string;
+  };
+  legalNotices: {
+    dataUsage: string;
+    privacyPolicy: string;
+  };
 }
 
 export class ApiIntegrationService {
-  private tabelogClient: TabelogApiClient;
   private hotpepperClient: HotpepperApiClient;
   private googlePlacesClient: GooglePlacesApiClient;
-  private rettyClient: RettyApiClient;
   private evaluationService: EvaluationService;
   private cacheService: CacheService;
 
+  // Legal compliance attributions
+  private readonly attributions = {
+    hotpepper: '画像提供：ホットペッパー グルメ',
+    googlePlaces: 'powered by Google',
+  };
+
+  // Cache duration settings (compliance with API terms)
+  private readonly cacheDurations = {
+    hotpepper: 86400,     // 24 hours (max allowed by Hotpepper)
+    googlePlaces: 2592000, // 30 days (max allowed by Google)
+    default: 3600,        // 1 hour default
+  };
+
   constructor() {
-    this.tabelogClient = new TabelogApiClient();
     this.hotpepperClient = new HotpepperApiClient();
     this.googlePlacesClient = new GooglePlacesApiClient();
-    this.rettyClient = new RettyApiClient();
     this.evaluationService = new EvaluationService();
     this.cacheService = new CacheService();
   }
@@ -78,10 +92,16 @@ export class ApiIntegrationService {
         platformsUsed: apiResults.platformsUsed,
         searchTime: Date.now() - startTime,
         cached: false,
+        attributions: this.getAttributions(apiResults.platformsUsed),
+        legalNotices: {
+          dataUsage: 'このサービスは外部APIから取得したデータを利用しています。データの正確性については各プラットフォームにお問い合わせください。',
+          privacyPolicy: '/privacy-policy',
+        },
       };
 
-      // Cache the result
-      await this.cacheService.set(cacheKey, result, 3600); // Cache for 1 hour
+      // Cache the result with appropriate duration
+      const cacheDuration = this.getCacheDuration(apiResults.platformsUsed);
+      await this.cacheService.set(cacheKey, result, cacheDuration);
 
       return result;
     } catch (error) {
