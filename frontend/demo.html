@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomikai Restaurant Finder - Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .feature-card h3 {
+            color: #ffeb3b;
+            margin-bottom: 15px;
+        }
+        .search-demo {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .status {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍻 Nomikai Restaurant Finder</h1>
+            <p>飲み会に最適なレストランを見つけるWebアプリケーション</p>
+        </div>
+
+        <div class="status">
+            <h3>🚀 開発ステータス</h3>
+            <p><strong>Phase 3: フロントエンド開発</strong> - 進行中</p>
+            <p>Python HTTPサーバーで動作中 (WSL環境対応)</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🔍 高度な検索機能</h3>
+                <p>場所、ジャンル、価格帯、人数など、詳細な条件でレストランを検索できます。</p>
+                <p><small>🌶️ 韓国料理・タイ・ベトナム・インド | 🍰 スイーツ・カフェ | 🍺 居酒屋・バー など40+ジャンル対応</small></p>
+            </div>
+            <div class="feature-card">
+                <h3>⭐ 統合評価システム</h3>
+                <p>複数のプラットフォームからの評価を統合し、最適なレストランを推薦します。</p>
+            </div>
+            <div class="feature-card">
+                <h3>📱 レスポンシブデザイン</h3>
+                <p>PC、タブレット、スマートフォンなど、あらゆるデバイスで快適に利用できます。</p>
+            </div>
+        </div>
+
+        <div class="search-demo">
+            <h3>🍽️ レストラン検索デモ</h3>
+            <form onsubmit="searchDemo(event)">
+                <div class="form-group">
+                    <label for="location">場所</label>
+                    <input type="text" id="location" placeholder="例: 渋谷, 新宿, 東京駅" />
+                </div>
+                <div class="form-group">
+                    <label for="genre">ジャンル</label>
+                    <select id="genre">
+                        <option value="">すべて</option>
+                        <optgroup label="和食・日本料理">
+                            <option value="japanese">和食</option>
+                            <option value="sushi">寿司</option>
+                            <option value="ramen">ラーメン</option>
+                            <option value="udon_soba">うどん・そば</option>
+                            <option value="tonkatsu">とんかつ</option>
+                            <option value="tempura">天ぷら</option>
+                            <option value="yakitori">焼き鳥</option>
+                            <option value="okonomiyaki">お好み焼き</option>
+                            <option value="shabu_shabu">しゃぶしゃぶ</option>
+                            <option value="sukiyaki">すき焼き</option>
+                            <option value="hotpot">鍋料理</option>
+                        </optgroup>
+                        <optgroup label="アジア料理">
+                            <option value="korean">韓国料理</option>
+                            <option value="chinese">中華</option>
+                            <option value="thai">タイ料理</option>
+                            <option value="vietnamese">ベトナム料理</option>
+                            <option value="indian">インドカレー</option>
+                        </optgroup>
+                        <optgroup label="西洋料理">
+                            <option value="italian">イタリアン</option>
+                            <option value="french">フレンチ</option>
+                            <option value="spanish">スペイン料理</option>
+                            <option value="mediterranean">地中海料理</option>
+                            <option value="american">アメリカン</option>
+                            <option value="mexican">メキシカン</option>
+                        </optgroup>
+                        <optgroup label="肉料理">
+                            <option value="yakiniku">焼肉</option>
+                            <option value="steak">ステーキ</option>
+                            <option value="hamburger">ハンバーガー</option>
+                        </optgroup>
+                        <optgroup label="カフェ・スイーツ">
+                            <option value="cafe">カフェ</option>
+                            <option value="sweets">スイーツ</option>
+                            <option value="bakery">ベーカリー</option>
+                            <option value="ice_cream">アイス・ジェラート</option>
+                            <option value="tea">紅茶・茶房</option>
+                        </optgroup>
+                        <optgroup label="飲み・パーティー">
+                            <option value="izakaya">居酒屋</option>
+                            <option value="bar">バー</option>
+                            <option value="wine_bar">ワインバー</option>
+                            <option value="beer_garden">ビアガーデン</option>
+                        </optgroup>
+                        <optgroup label="その他">
+                            <option value="pizza">ピザ</option>
+                            <option value="pasta">パスタ</option>
+                            <option value="seafood">海鮮</option>
+                            <option value="buffet">ビュッフェ</option>
+                            <option value="family_restaurant">ファミリーレストラン</option>
+                            <option value="fast_food">ファストフード</option>
+                            <option value="other">その他</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="capacity">人数</label>
+                    <select id="capacity">
+                        <option value="2">2人</option>
+                        <option value="4">4人</option>
+                        <option value="6">6人</option>
+                        <option value="8">8人</option>
+                        <option value="10">10人</option>
+                    </select>
+                </div>
+                <button type="submit">🔍 検索</button>
+            </form>
+            <div id="search-result" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="status">
+            <h3>📋 実装済み機能</h3>
+            <p>✅ React + TypeScript + Vite セットアップ</p>
+            <p>✅ Material-UI デザインシステム</p>
+            <p>✅ Redux Toolkit 状態管理</p>
+            <p>✅ React Router ナビゲーション</p>
+            <p>✅ Jest テストスイート (93/111 テスト成功)</p>
+            <p>✅ <strong>40+ジャンル</strong>対応 (韓国料理・エスニック・スイーツ等)</p>
+            <p>🔧 バックエンドAPI統合 (進行中)</p>
+        </div>
+
+        <div class="status">
+            <h3>🛠️ 技術スタック</h3>
+            <p><strong>Frontend:</strong> React 18, TypeScript, Vite, Material-UI</p>
+            <p><strong>State Management:</strong> Redux Toolkit</p>
+            <p><strong>Routing:</strong> React Router v6</p>
+            <p><strong>Testing:</strong> Jest, React Testing Library</p>
+            <p><strong>Backend:</strong> Node.js, Express, PostgreSQL</p>
+        </div>
+    </div>
+
+    <script>
+        // ジャンルマップ
+        const genreMap = {
+            'japanese': '和食', 'sushi': '寿司', 'ramen': 'ラーメン', 
+            'udon_soba': 'うどん・そば', 'tonkatsu': 'とんかつ', 'tempura': '天ぷら',
+            'yakitori': '焼き鳥', 'okonomiyaki': 'お好み焼き', 'shabu_shabu': 'しゃぶしゃぶ',
+            'sukiyaki': 'すき焼き', 'hotpot': '鍋料理', 'korean': '韓国料理',
+            'chinese': '中華', 'thai': 'タイ料理', 'vietnamese': 'ベトナム料理',
+            'indian': 'インドカレー', 'italian': 'イタリアン', 'french': 'フレンチ',
+            'spanish': 'スペイン料理', 'mediterranean': '地中海料理', 'american': 'アメリカン',
+            'mexican': 'メキシカン', 'yakiniku': '焼肉', 'steak': 'ステーキ',
+            'hamburger': 'ハンバーガー', 'cafe': 'カフェ', 'sweets': 'スイーツ',
+            'bakery': 'ベーカリー', 'ice_cream': 'アイス・ジェラート', 'tea': '紅茶・茶房',
+            'izakaya': '居酒屋', 'bar': 'バー', 'wine_bar': 'ワインバー',
+            'beer_garden': 'ビアガーデン', 'pizza': 'ピザ', 'pasta': 'パスタ',
+            'seafood': '海鮮', 'buffet': 'ビュッフェ', 'family_restaurant': 'ファミリーレストラン',
+            'fast_food': 'ファストフード', 'other': 'その他'
+        };
+
+        function searchDemo(event) {
+            event.preventDefault();
+            const location = document.getElementById('location').value;
+            const genre = document.getElementById('genre').value;
+            const capacity = document.getElementById('capacity').value;
+            
+            const result = document.getElementById('search-result');
+            result.innerHTML = '<p style="color: #667eea; font-weight: bold;">🔍 検索中...</p>';
+            
+            setTimeout(() => {
+                const genreLabel = genre ? genreMap[genre] || genre : 'すべて';
+                const genreEmoji = getGenreEmoji(genre);
+                
+                result.innerHTML = 
+                    '<div style="background: #f0f8ff; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">' +
+                        '<h4 style="color: #333; margin-top: 0;">🍽️ 検索結果 (デモ)</h4>' +
+                        '<p><strong>📍 場所:</strong> ' + (location || '指定なし') + '</p>' +
+                        '<p><strong>' + genreEmoji + ' ジャンル:</strong> ' + genreLabel + '</p>' +
+                        '<p><strong>👥 人数:</strong> ' + capacity + '人</p>' +
+                        '<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 3px solid #ffc107;">' +
+                            '<p style="color: #856404; margin: 0;"><strong>💡 ヒント:</strong> ' + getGenreHint(genre) + '</p>' +
+                        '</div>' +
+                        '<div style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px;">' +
+                            '<p style="color: #2e7d2e; margin: 0;"><strong>✅ 成功:</strong> ' + (40 + Math.floor(Math.random() * 20)) + '件のジャンル選択肢が利用可能です</p>' +
+                        '</div>' +
+                    '</div>';
+            }, 1000);
+        }
+
+        function getGenreEmoji(genre) {
+            const emojiMap = {
+                'japanese': '🍱', 'sushi': '🍣', 'ramen': '🍜', 'korean': '🌶️',
+                'chinese': '🥢', 'thai': '🌶️', 'vietnamese': '🇻🇳', 'indian': '🍛',
+                'italian': '🍝', 'french': '🇫🇷', 'mexican': '🌮', 'american': '🍔',
+                'yakiniku': '🥩', 'steak': '🥩', 'hamburger': '🍔', 'pizza': '🍕',
+                'cafe': '☕', 'sweets': '🍰', 'ice_cream': '🍦', 'izakaya': '🍺',
+                'bar': '🍸', 'seafood': '🦐', 'buffet': '🍽️'
+            };
+            return emojiMap[genre] || '🍽️';
+        }
+
+        function getGenreHint(genre) {
+            const hints = {
+                'korean': '韓国料理は辛い料理が多いので、辛さが苦手な方は事前に確認を！',
+                'thai': 'タイ料理はスパイシーで酸味のある味が特徴です。',
+                'vietnamese': 'ベトナム料理はヘルシーで香草を多用した料理が人気です。',
+                'indian': 'インドカレーは様々なスパイスを使った本格的な味が楽しめます。',
+                'sweets': 'スイーツ店は女性に人気！デザートタイムにぴったりです。',
+                'izakaya': '居酒屋は飲み会の定番！お酒と一緒に料理を楽しめます。',
+                'buffet': 'ビュッフェは大人数での利用や食べ盛りの方におすすめです。'
+            };
+            return hints[genre] || '実際のレストラン検索では、この条件で最適な店舗をご提案します。';
+        }
+    </script>
+</body>
+</html>

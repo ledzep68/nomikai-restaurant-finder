@@ -11,6 +11,10 @@ export interface SearchQuery {
   sort?: 'rating' | 'price' | 'distance';
 }
 
+export interface SearchHistoryItem extends SearchQuery {
+  timestamp: string;
+}
+
 export interface SearchFilters {
   genres: string[];
   priceRanges: Array<{
@@ -29,7 +33,7 @@ export interface SearchState {
   query: SearchQuery;
   results: IntegratedSearchResult | null;
   filters: SearchFilters;
-  history: SearchQuery[];
+  history: SearchHistoryItem[];
   loading: boolean;
   error: string | null;
 }

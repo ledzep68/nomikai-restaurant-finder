@@ -16,48 +16,62 @@ export const formatPriceRange = (min: number, max: number): string => {
 };
 
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('ja-JP', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  } catch {
+    return '';
+  }
 };
 
 export const formatDateShort = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('ja-JP', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(date);
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    return new Intl.DateTimeFormat('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  } catch {
+    return '';
+  }
 };
 
 export const getRecommendationLabel = (
   recommendation: keyof typeof RECOMMENDATION_LABELS
 ): string => {
-  return RECOMMENDATION_LABELS[recommendation];
+  return RECOMMENDATION_LABELS[recommendation] || '';
 };
 
 export const getPlatformLabel = (
   platform: keyof typeof PLATFORM_LABELS
 ): string => {
-  return PLATFORM_LABELS[platform];
+  return PLATFORM_LABELS[platform] || platform;
 };
 
 export const generateStarRating = (rating: number): string => {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  const clampedRating = Math.max(0, Math.min(5, rating));
+  const rounded = Math.round(clampedRating);
+  const fullStars = rounded;
+  const emptyStars = 5 - fullStars;
   
-  return '★'.repeat(fullStars) + 
-         (hasHalfStar ? '☆' : '') + 
-         '☆'.repeat(emptyStars);
+  return '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
 };
 
-export const truncateText = (text: string, maxLength: number): string => {
+export const truncateText = (text: string | undefined, maxLength: number): string => {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
 };
@@ -77,6 +91,12 @@ export const getErrorMessage = (error: unknown): string => {
   }
   if (typeof error === 'string') {
     return error;
+  }
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const axiosError = error as any;
+    if (axiosError.response?.data?.message) {
+      return axiosError.response.data.message;
+    }
   }
   return '予期しないエラーが発生しました';
 };

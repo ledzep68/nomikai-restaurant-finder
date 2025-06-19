@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { SearchState, SearchQuery, SearchFilters } from '@types/search';
+import { SearchState, SearchQuery, SearchFilters, SearchHistoryItem } from '@types/search';
 import { IntegratedSearchResult } from '@types/restaurant';
-import { restaurantService } from '@services/restaurantService';
+import * as restaurantService from '@services/restaurantService';
 import { getErrorMessage } from '@utils/helpers';
 import { GENRES, PRICE_RANGES, CAPACITIES, SORT_OPTIONS } from '@utils/constants';
 
@@ -30,7 +30,7 @@ export const searchRestaurants = createAsyncThunk(
   'search/searchRestaurants',
   async (query: SearchQuery, { rejectWithValue }) => {
     try {
-      return await restaurantService.search(query);
+      return await restaurantService.restaurantService.search(query);
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
@@ -65,7 +65,12 @@ const searchSlice = createSlice({
         state.history.splice(existingIndex, 1);
       }
       
-      state.history.unshift(action.payload);
+      const historyItem: SearchHistoryItem = {
+        ...action.payload,
+        timestamp: new Date().toISOString(),
+      };
+      
+      state.history.unshift(historyItem);
       
       // Keep only last 10 searches
       if (state.history.length > 10) {

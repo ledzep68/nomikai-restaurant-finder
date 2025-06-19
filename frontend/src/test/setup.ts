@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom';
 
+// Mock import.meta.env
+(global as any).importMetaEnv = {
+  VITE_API_BASE_URL: 'http://localhost:5000/api'
+};
+
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
