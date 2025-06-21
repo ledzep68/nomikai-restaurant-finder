@@ -8,11 +8,13 @@ interface Config {
     nodeEnv: string;
   };
   database: {
+    type: string;
     host: string;
     port: number;
     name: string;
     user: string;
     password: string;
+    path?: string;
   };
   redis: {
     url: string;
@@ -70,11 +72,13 @@ export const config: Config = {
     nodeEnv: getEnvVar('NODE_ENV', 'development'),
   },
   database: {
+    type: getEnvVar('DB_TYPE', 'sqlite'),
     host: getEnvVar('DB_HOST', 'localhost'),
     port: parseInt(getEnvVar('DB_PORT', '5432'), 10),
     name: getEnvVar('DB_NAME', 'nomikai_restaurant_finder'),
     user: getEnvVar('DB_USER', 'postgres'),
-    password: getEnvVar('DB_PASSWORD'),
+    password: getEnvVar('DB_PASSWORD', 'password'),
+    path: getEnvVar('DB_PATH', './database/nomikai.db'),
   },
   redis: {
     url: getEnvVar('REDIS_URL', 'redis://localhost:6379'),

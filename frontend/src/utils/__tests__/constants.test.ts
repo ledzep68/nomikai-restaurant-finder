@@ -111,20 +111,29 @@ describe('SORT_OPTIONS', () => {
 
 describe('CAPACITIES', () => {
   it('人数の配列が正しく定義されている', () => {
-    expect(CAPACITIES).toEqual([2, 4, 6, 8, 10, 15, 20, 30]);
+    expect(CAPACITIES).toHaveLength(51); // 1-50 + '50+'
+    expect(CAPACITIES[0]).toBe(1);
+    expect(CAPACITIES[49]).toBe(50);
+    expect(CAPACITIES[50]).toBe('50+');
   });
 
-  it('人数が昇順に並んでいる', () => {
-    for (let i = 1; i < CAPACITIES.length; i++) {
-      expect(CAPACITIES[i]).toBeGreaterThan(CAPACITIES[i - 1]);
+  it('数値部分が昇順に並んでいる', () => {
+    const numericCapacities = CAPACITIES.slice(0, 50); // 1-50の部分
+    for (let i = 1; i < numericCapacities.length; i++) {
+      expect(numericCapacities[i]).toBeGreaterThan(numericCapacities[i - 1]);
     }
   });
 
-  it('すべての人数が正の整数である', () => {
-    CAPACITIES.forEach(capacity => {
+  it('数値部分はすべて正の整数である', () => {
+    const numericCapacities = CAPACITIES.slice(0, 50); // 1-50の部分
+    numericCapacities.forEach(capacity => {
       expect(Number.isInteger(capacity)).toBe(true);
       expect(capacity).toBeGreaterThan(0);
     });
+  });
+
+  it('50+の特別値が含まれている', () => {
+    expect(CAPACITIES[50]).toBe('50+');
   });
 });
 

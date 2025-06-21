@@ -9,6 +9,7 @@ import SearchResults from '../SearchResults';
 import authReducer from '@store/authSlice';
 import restaurantReducer from '@store/restaurantSlice';
 import searchReducer from '@store/searchSlice';
+import favoritesReducer from '@store/favoritesSlice';
 import { IntegratedSearchResult } from '@types/restaurant';
 
 const theme = createTheme();
@@ -98,6 +99,7 @@ const createTestStore = (initialState = {}) => {
       auth: authReducer,
       restaurant: restaurantReducer,
       search: searchReducer,
+      favorites: favoritesReducer,
     },
     preloadedState: {
       auth: {
@@ -133,6 +135,10 @@ const createTestStore = (initialState = {}) => {
         loading: false,
         error: null,
       },
+      favorites: {
+        favorites: [],
+        lastUpdated: null,
+      },
       ...initialState,
     },
   });
@@ -144,7 +150,7 @@ const TestWrapper: React.FC<{ store: any; children: React.ReactNode }> = ({
   children 
 }) => (
   <Provider store={store}>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ThemeProvider theme={theme}>
         {children}
       </ThemeProvider>
@@ -215,7 +221,7 @@ describe('SearchResults', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('検索条件に一致するレストランが見つかりませんでした。')).toBeInTheDocument();
+      expect(screen.getByText(/検索条件に一致するレストランが見つかりませんでした/)).toBeInTheDocument();
     });
 
     it('検索結果が表示される', () => {
@@ -265,7 +271,7 @@ describe('SearchResults', () => {
       // 1つ目のレストラン
       expect(screen.getByText('テスト居酒屋')).toBeInTheDocument();
       expect(screen.getByText('東京都渋谷区渋谷1-1-1')).toBeInTheDocument();
-      expect(screen.getByText('¥2,000～¥4,000')).toBeInTheDocument();
+      expect(screen.getByText(/¥2,000.*¥4,000/)).toBeInTheDocument();
       expect(screen.getByText('居酒屋')).toBeInTheDocument();
 
       // 2つ目のレストラン

@@ -84,7 +84,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
       genre: '',
       priceMin: 0,
       priceMax: 5000,
-      capacity: 4,
+      capacity: 2,
     });
     setPriceRange([0, 5000]);
   };
@@ -210,7 +210,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
                   >
                     {CAPACITIES.map((capacity) => (
                       <MenuItem key={capacity} value={capacity}>
-                        {capacity}人
+                        {capacity === '50+' ? '50人以上' : `${capacity}人`}
                       </MenuItem>
                     ))}
                   </Select>

@@ -192,11 +192,33 @@
                 <div class="form-group">
                     <label for="capacity">人数</label>
                     <select id="capacity">
+                        <option value="1">1人</option>
                         <option value="2">2人</option>
+                        <option value="3">3人</option>
                         <option value="4">4人</option>
+                        <option value="5">5人</option>
                         <option value="6">6人</option>
+                        <option value="7">7人</option>
                         <option value="8">8人</option>
+                        <option value="9">9人</option>
                         <option value="10">10人</option>
+                        <option value="11">11人</option>
+                        <option value="12">12人</option>
+                        <option value="13">13人</option>
+                        <option value="14">14人</option>
+                        <option value="15">15人</option>
+                        <option value="16">16人</option>
+                        <option value="17">17人</option>
+                        <option value="18">18人</option>
+                        <option value="19">19人</option>
+                        <option value="20">20人</option>
+                        <option value="25">25人</option>
+                        <option value="30">30人</option>
+                        <option value="35">35人</option>
+                        <option value="40">40人</option>
+                        <option value="45">45人</option>
+                        <option value="50">50人</option>
+                        <option value="50+">50人以上</option>
                     </select>
                 </div>
                 <button type="submit">🔍 検索</button>
@@ -244,33 +266,96 @@
             'fast_food': 'ファストフード', 'other': 'その他'
         };
 
-        function searchDemo(event) {
+        async function searchDemo(event) {
             event.preventDefault();
             const location = document.getElementById('location').value;
             const genre = document.getElementById('genre').value;
             const capacity = document.getElementById('capacity').value;
             
             const result = document.getElementById('search-result');
-            result.innerHTML = '<p style="color: #667eea; font-weight: bold;">🔍 検索中...</p>';
+            result.innerHTML = '<p style="color: #667eea; font-weight: bold;">🔍 バックエンドAPIに接続中...</p>';
             
-            setTimeout(() => {
+            try {
+                // Try to connect to backend API
+                const params = new URLSearchParams();
+                if (location) params.append('location', location);
+                if (genre) params.append('genre', genre);
+                if (capacity) params.append('capacity', capacity);
+                
+                const endpoints = [
+                    'http://localhost:3002/api/restaurants/search',
+                    'http://localhost:3001/api/restaurants/search'
+                ];
+                
+                let apiData = null;
+                let usedEndpoint = null;
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${endpoint}?${params}`, {
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            apiData = await response.json();
+                            usedEndpoint = endpoint;
+                            break;
+                        }
+                    } catch (error) {
+                        console.log(`Failed to connect to ${endpoint}`);
+                        continue;
+                    }
+                }
+                
                 const genreLabel = genre ? genreMap[genre] || genre : 'すべて';
                 const genreEmoji = getGenreEmoji(genre);
                 
-                result.innerHTML = 
-                    '<div style="background: #f0f8ff; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">' +
-                        '<h4 style="color: #333; margin-top: 0;">🍽️ 検索結果 (デモ)</h4>' +
-                        '<p><strong>📍 場所:</strong> ' + (location || '指定なし') + '</p>' +
-                        '<p><strong>' + genreEmoji + ' ジャンル:</strong> ' + genreLabel + '</p>' +
-                        '<p><strong>👥 人数:</strong> ' + capacity + '人</p>' +
-                        '<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 3px solid #ffc107;">' +
-                            '<p style="color: #856404; margin: 0;"><strong>💡 ヒント:</strong> ' + getGenreHint(genre) + '</p>' +
-                        '</div>' +
-                        '<div style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px;">' +
-                            '<p style="color: #2e7d2e; margin: 0;"><strong>✅ 成功:</strong> ' + (40 + Math.floor(Math.random() * 20)) + '件のジャンル選択肢が利用可能です</p>' +
-                        '</div>' +
-                    '</div>';
-            }, 1000);
+                if (apiData && apiData.data) {
+                    // Show API results
+                    const restaurants = apiData.data.restaurants || [];
+                    result.innerHTML = 
+                        '<div style="background: #f0f8ff; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">' +
+                            '<h4 style="color: #333; margin-top: 0;">🍽️ Phase 4 - バックエンド統合成功!</h4>' +
+                            '<p><strong>🚀 API:</strong> ' + usedEndpoint + '</p>' +
+                            '<p><strong>📍 場所:</strong> ' + (location || '指定なし') + '</p>' +
+                            '<p><strong>' + genreEmoji + ' ジャンル:</strong> ' + genreLabel + '</p>' +
+                            '<p><strong>👥 人数:</strong> ' + capacity + '人</p>' +
+                            '<div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 5px; border-left: 3px solid #28a745;">' +
+                                '<h5 style="color: #155724; margin-top: 0;">✅ 検索結果: ' + restaurants.length + '件</h5>' +
+                                (restaurants.length > 0 ? 
+                                    restaurants.slice(0, 3).map(r => 
+                                        '<div style="margin: 10px 0; padding: 8px; background: white; border-radius: 3px;">' +
+                                            '<strong>' + r.restaurant.name + '</strong><br>' +
+                                            '<small>📍 ' + r.restaurant.address + '</small><br>' +
+                                            '<small>💰 ¥' + r.restaurant.priceRange.min + '-' + r.restaurant.priceRange.max + '</small>' +
+                                        '</div>'
+                                    ).join('') : 
+                                    '<p>該当するレストランが見つかりませんでした。</p>'
+                                ) +
+                            '</div>' +
+                        '</div>';
+                } else {
+                    // Fallback to demo mode
+                    result.innerHTML = 
+                        '<div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107;">' +
+                            '<h4 style="color: #333; margin-top: 0;">🍽️ デモモード (API接続失敗)</h4>' +
+                            '<p><strong>📍 場所:</strong> ' + (location || '指定なし') + '</p>' +
+                            '<p><strong>' + genreEmoji + ' ジャンル:</strong> ' + genreLabel + '</p>' +
+                            '<p><strong>👥 人数:</strong> ' + capacity + '人</p>' +
+                            '<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 3px solid #ffc107;">' +
+                                '<p style="color: #856404; margin: 0;"><strong>💡 ヒント:</strong> ' + getGenreHint(genre) + '</p>' +
+                            '</div>' +
+                            '<div style="margin-top: 10px; padding: 10px; background: #e8f5e8; border-radius: 5px;">' +
+                                '<p style="color: #2e7d2e; margin: 0;"><strong>✅ デモ:</strong> ' + (40 + Math.floor(Math.random() * 20)) + '件のジャンル選択肢が利用可能です</p>' +
+                            '</div>' +
+                        '</div>';
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                result.innerHTML = '<p style="color: #dc3545;">❌ 検索エラーが発生しました</p>';
+            }
         }
 
         function getGenreEmoji(genre) {

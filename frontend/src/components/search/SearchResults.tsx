@@ -12,20 +12,21 @@ import {
   Pagination,
   Alert,
   Skeleton,
+  CardMedia,
 } from '@mui/material';
 import {
   LocationOn,
   Phone,
   Restaurant,
   Star,
-  Favorite,
-  FavoriteBorder,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/index';
 import { setQuery, searchRestaurants } from '@store/searchSlice';
-import { addToFavorites, removeFromFavorites } from '@store/restaurantSlice';
+import { toggleFavorite, selectIsFavorite } from '@store/favoritesSlice';
 import { EvaluationResult } from '@types/restaurant';
+import { LazyImage } from '@components/common/LazyImage';
+import { FavoriteButton } from '@components/common/FavoriteButton';
 import {
   formatPriceRange,
   getRecommendationLabel,
@@ -38,7 +39,6 @@ const SearchResults: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { results, loading, query } = useAppSelector((state) => state.search);
-  const { favorites } = useAppSelector((state) => state.restaurant);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const handlePageChange = async (event: React.ChangeEvent<unknown>, page: number) => {
@@ -47,24 +47,6 @@ const SearchResults: React.FC = () => {
     await dispatch(searchRestaurants(newQuery));
   };
 
-  const handleFavoriteToggle = async (restaurantId: string) => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    const isFavorite = favorites.some((fav) => fav.id === restaurantId);
-    
-    try {
-      if (isFavorite) {
-        await dispatch(removeFromFavorites(restaurantId)).unwrap();
-      } else {
-        await dispatch(addToFavorites(restaurantId)).unwrap();
-      }
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-    }
-  };
 
   const getRecommendationColor = (recommendation: keyof typeof RECOMMENDATION_LABELS) => {
     switch (recommendation) {
@@ -139,7 +121,6 @@ const SearchResults: React.FC = () => {
       {/* Restaurant Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {results.restaurants.map((result: EvaluationResult) => {
-          const isFavorite = favorites.some((fav) => fav.id === result.restaurant.id);
           
           return (
             <Grid item xs={12} md={6} lg={4} key={result.restaurant.id}>
@@ -152,6 +133,32 @@ const SearchResults: React.FC = () => {
                 }}
                 data-testid={`restaurant-card-${result.restaurant.id}`}
               >
+                {/* Restaurant Image */}
+                <Box sx={{ position: 'relative' }}>
+                  <LazyImage
+                    src={result.restaurant.images?.[0]}
+                    alt={result.restaurant.name}
+                    height={200}
+                    fallbackSrc="/images/restaurant-placeholder.jpg"
+                  />
+                  {/* Favorite Button Overlay */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '50%',
+                      padding: '4px',
+                    }}
+                  >
+                    <FavoriteButton 
+                      restaurantId={result.restaurant.id}
+                      size="small"
+                    />
+                  </Box>
+                </Box>
+
                 <CardContent sx={{ flexGrow: 1 }}>
                   {/* Restaurant Name */}
                   <Typography variant="h6" component="h3" gutterBottom>
@@ -221,19 +228,11 @@ const SearchResults: React.FC = () => {
                 <CardActions>
                   <Button
                     size="small"
+                    variant="contained"
                     onClick={() => navigate(`/restaurant/${result.restaurant.id}`)}
                     data-testid={`view-detail-${result.restaurant.id}`}
                   >
                     詳細を見る
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={isFavorite ? <Favorite /> : <FavoriteBorder />}
-                    onClick={() => handleFavoriteToggle(result.restaurant.id)}
-                    color={isFavorite ? 'error' : 'inherit'}
-                    data-testid={`favorite-${result.restaurant.id}`}
-                  >
-                    {isFavorite ? 'お気に入り済み' : 'お気に入り'}
                   </Button>
                 </CardActions>
               </Card>

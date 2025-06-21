@@ -1,4 +1,4 @@
-import { DatabaseConnection } from '@/database/connection';
+import { SQLiteConnection } from '@/database/sqlite-connection';
 import { Restaurant, SearchLog } from '@/types/database';
 import { createError } from '@/middleware/errorHandler';
 import { ApiIntegrationService } from './apiIntegrationService';
@@ -18,11 +18,11 @@ export interface RestaurantWithReviews extends Restaurant {
 }
 
 export class RestaurantService {
-  private db: DatabaseConnection;
+  private db: SQLiteConnection;
   private apiIntegrationService: ApiIntegrationService;
 
   constructor() {
-    this.db = DatabaseConnection.getInstance();
+    this.db = SQLiteConnection.getInstance();
     this.apiIntegrationService = new ApiIntegrationService();
   }
 
@@ -85,41 +85,41 @@ export class RestaurantService {
     `;
 
     const queryParams: unknown[] = [];
-    let paramCount = 0;
 
     if (genre) {
-      paramCount++;
-      query += ` AND r.genre ILIKE $${paramCount}`;
+      query += ` AND r.genre LIKE ?`;
       queryParams.push(`%${genre}%`);
     }
 
     if (location) {
-      paramCount++;
-      query += ` AND r.location ILIKE $${paramCount}`;
+      query += ` AND r.location LIKE ?`;
       queryParams.push(`%${location}%`);
     }
 
     if (priceRange) {
-      paramCount++;
-      query += ` AND r.price_range = $${paramCount}`;
-      queryParams.push(priceRange);
+      // Handle price range as min/max values
+      const priceRanges: { [key: string]: { min: number; max: number } } = {
+        'low': { min: 0, max: 2000 },
+        'medium': { min: 2000, max: 5000 },
+        'high': { min: 5000, max: 999999 }
+      };
+      
+      const range = priceRanges[priceRange] || priceRanges['medium'];
+      query += ` AND r.price_range_min >= ? AND r.price_range_max <= ?`;
+      queryParams.push(range.min, range.max);
     }
 
     query += `
-      GROUP BY r.id, r.name, r.genre, r.location, r.price_range, r.created_at
+      GROUP BY r.id, r.name, r.genre, r.location, r.address, r.phone, 
+               r.price_range_min, r.price_range_max, r.latitude, r.longitude, r.created_at, r.updated_at
       ORDER BY avg_rating DESC, total_reviews DESC
+      LIMIT ? OFFSET ?
     `;
 
-    paramCount++;
-    query += ` LIMIT $${paramCount}`;
-    queryParams.push(limit);
-
-    paramCount++;
-    query += ` OFFSET $${paramCount}`;
-    queryParams.push(offset);
+    queryParams.push(limit, offset);
 
     const result = await this.db.query(query, queryParams);
-    const restaurants = (result as { rows: RestaurantWithReviews[] }).rows;
+    const restaurants = result as RestaurantWithReviews[];
 
     if (userSession) {
       await this.logSearch(userSession, params, restaurants);
@@ -136,12 +136,13 @@ export class RestaurantService {
         COALESCE(SUM(rv.review_count), 0) as total_reviews
       FROM restaurants r
       LEFT JOIN reviews rv ON r.id = rv.restaurant_id
-      WHERE r.id = $1
-      GROUP BY r.id, r.name, r.genre, r.location, r.price_range, r.created_at
+      WHERE r.id = ?
+      GROUP BY r.id, r.name, r.genre, r.location, r.address, r.phone, 
+               r.price_range_min, r.price_range_max, r.latitude, r.longitude, r.created_at, r.updated_at
     `;
 
     const result = await this.db.query(query, [id]);
-    const restaurants = (result as { rows: RestaurantWithReviews[] }).rows;
+    const restaurants = result as RestaurantWithReviews[];
 
     return restaurants.length > 0 ? restaurants[0] : null;
   }
@@ -182,7 +183,7 @@ export class RestaurantService {
   ): Promise<void> {
     try {
       await this.db.query(
-        'INSERT INTO search_logs (user_session, search_params, results) VALUES ($1, $2, $3)',
+        'INSERT INTO search_logs (user_session, search_params, results) VALUES (?, ?, ?)',
         [
           userSession,
           JSON.stringify(searchParams),
@@ -196,11 +197,11 @@ export class RestaurantService {
 
   public async getSearchHistory(userSession: string): Promise<SearchLog[]> {
     const result = await this.db.query(
-      'SELECT * FROM search_logs WHERE user_session = $1 ORDER BY timestamp DESC LIMIT 10',
+      'SELECT * FROM search_logs WHERE user_session = ? ORDER BY timestamp DESC LIMIT 10',
       [userSession]
     );
 
-    return (result as { rows: SearchLog[] }).rows;
+    return result as SearchLog[];
   }
 
   private async logIntegratedSearch(
@@ -216,7 +217,7 @@ export class RestaurantService {
   ): Promise<void> {
     try {
       await this.db.query(
-        'INSERT INTO search_logs (user_session, search_params, results) VALUES ($1, $2, $3)',
+        'INSERT INTO search_logs (user_session, search_params, results) VALUES (?, ?, ?)',
         [
           userSession,
           JSON.stringify({

@@ -5,7 +5,7 @@ export interface SearchQuery {
     min: number;
     max: number;
   };
-  capacity?: number;
+  capacity?: number | string;
   page?: number;
   limit?: number;
   sort?: 'rating' | 'price' | 'distance';
@@ -22,7 +22,7 @@ export interface SearchFilters {
     min: number;
     max: number;
   }>;
-  capacities: number[];
+  capacities: (number | string)[];
   sortOptions: Array<{
     value: string;
     label: string;
@@ -43,5 +43,5 @@ export interface SearchFormData {
   genre: string;
   priceMin: number;
   priceMax: number;
-  capacity: number;
+  capacity: number | string;
 }

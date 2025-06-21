@@ -12,6 +12,7 @@ import HomePage from '@pages/HomePage';
 import SearchPage from '@pages/SearchPage';
 import LoginPage from '@pages/LoginPage';
 import RegisterPage from '@pages/RegisterPage';
+import { RestaurantDetailPage } from '@pages/RestaurantDetailPage';
 
 const theme = createTheme({
   palette: {
@@ -50,6 +51,7 @@ const AppContent: React.FC = () => {
             <Route path={ROUTES.SEARCH} element={<SearchPage />} />
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+            <Route path={ROUTES.RESTAURANT_DETAIL} element={<RestaurantDetailPage />} />
             {/* Add more routes as needed */}
           </Routes>
         </Container>

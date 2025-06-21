@@ -111,3 +111,8 @@ export const debounce = <T extends (...args: unknown[]) => void>(
     timeoutId = setTimeout(() => func(...args), delay);
   };
 };
+
+export const formatAddress = (address: string): string => {
+  if (!address) return '';
+  return address.trim();
+};
