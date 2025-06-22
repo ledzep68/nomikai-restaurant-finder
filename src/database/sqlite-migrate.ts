@@ -17,7 +17,8 @@ export class SQLiteMigration {
       await this.createMigrationsTable();
       
       // Run SQLite migration
-      const migrationPath = path.join(__dirname, 'migrations', '001_create_tables_sqlite.sql');
+      const migrationDir = process.env.MIGRATION_PATH || path.join(__dirname, 'migrations');
+      const migrationPath = path.join(migrationDir, '001_create_tables_sqlite.sql');
       
       if (fs.existsSync(migrationPath)) {
         const migrationName = '001_create_tables_sqlite';

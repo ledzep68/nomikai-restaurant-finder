@@ -1,23 +1,23 @@
 import { App } from './app';
 import { config } from '@/utils/config';
-import { DatabaseConnection } from '@/database/connection';
-import { DatabaseMigrator } from '@/database/migrate';
+import { SQLiteConnection } from '@/database/sqlite-connection';
+import { SQLiteMigration } from '@/database/sqlite-migrate';
 
 async function startServer(): Promise<void> {
   try {
     console.log('🔧 Starting server initialization...');
 
-    const db = DatabaseConnection.getInstance();
+    const db = SQLiteConnection.getInstance();
     const isConnected = await db.testConnection();
     
     if (!isConnected) {
-      throw new Error('Failed to connect to database');
+      throw new Error('Failed to connect to SQLite database');
     }
-    console.log('✅ Database connection established');
+    console.log('✅ SQLite database connection established');
 
-    const migrator = new DatabaseMigrator();
+    const migrator = new SQLiteMigration();
     await migrator.runMigrations();
-    console.log('✅ Database migrations completed');
+    console.log('✅ SQLite database migrations completed');
 
     const app = new App();
     app.listen(config.app.port);

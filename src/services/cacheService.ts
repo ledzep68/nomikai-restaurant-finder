@@ -1,4 +1,4 @@
-import Redis from 'redis';
+import * as Redis from 'redis';
 import { config } from '@/utils/config';
 
 export interface CacheOptions {
@@ -6,40 +6,48 @@ export interface CacheOptions {
 }
 
 export class CacheService {
-  private client: Redis.RedisClientType;
+  private client: Redis.RedisClientType | null = null;
   private connected: boolean = false;
 
   constructor() {
-    this.client = Redis.createClient({
-      url: config.redis.url,
-    });
+    try {
+      this.client = Redis.createClient({
+        url: config.redis.url,
+      });
+    } catch (error) {
+      console.warn('Redis not available, using memory cache only:', error);
+      this.client = null;
+    }
 
-    this.client.on('error', (err) => {
-      console.error('Redis Client Error:', err);
-      this.connected = false;
-    });
+    if (this.client) {
+      this.client.on('error', (err) => {
+        console.error('Redis Client Error:', err);
+        this.connected = false;
+      });
 
-    this.client.on('connect', () => {
-      console.log('Redis Client Connected');
-      this.connected = true;
-    });
+      this.client.on('connect', () => {
+        console.log('Redis Client Connected');
+        this.connected = true;
+      });
 
-    // Connect asynchronously
-    this.connect().catch(console.error);
+      // Connect asynchronously
+      this.connect().catch(console.error);
+    }
   }
 
   private async connect(): Promise<void> {
-    if (!this.connected) {
+    if (!this.connected && this.client) {
       try {
         await this.client.connect();
       } catch (error) {
         console.error('Failed to connect to Redis:', error);
+        this.client = null;
       }
     }
   }
 
   public async get<T>(key: string, options?: CacheOptions): Promise<T | null> {
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       console.warn('Redis not connected, skipping cache get');
       return null;
     }
@@ -66,7 +74,7 @@ export class CacheService {
   }
 
   public async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       console.warn('Redis not connected, skipping cache set');
       return;
     }
@@ -88,7 +96,7 @@ export class CacheService {
   }
 
   public async delete(key: string): Promise<void> {
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       console.warn('Redis not connected, skipping cache delete');
       return;
     }
@@ -101,7 +109,7 @@ export class CacheService {
   }
 
   public async flush(): Promise<void> {
-    if (!this.connected) {
+    if (!this.connected || !this.client) {
       console.warn('Redis not connected, skipping cache flush');
       return;
     }
@@ -114,7 +122,7 @@ export class CacheService {
   }
 
   public async close(): Promise<void> {
-    if (this.connected) {
+    if (this.connected && this.client) {
       await this.client.quit();
       this.connected = false;
     }

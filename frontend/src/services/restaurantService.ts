@@ -1,9 +1,40 @@
 import { apiService } from './api';
-import { IntegratedSearchResult, Restaurant, Evaluation } from '@types/restaurant';
+import { mockApiService } from './mockApiService';
+import { IntegratedSearchResult, Restaurant, Evaluation, EvaluationResult } from '@types/restaurant';
 import { SearchQuery } from '@types/search';
+
+// 開発環境でモックAPIを使用するかどうかの判定
+const USE_MOCK_API = process.env.NODE_ENV === 'development' && 
+  (process.env.REACT_APP_USE_MOCK_API === 'true' || !process.env.REACT_APP_API_URL);
 
 export const restaurantService = {
   async search(query: SearchQuery): Promise<IntegratedSearchResult> {
+    // 開発環境でモックAPIを使用
+    if (USE_MOCK_API) {
+      console.log('Using mock API for restaurant search');
+      const mockResults = await mockApiService.searchRestaurants(query);
+      
+      // IntegratedSearchResult形式に変換
+      return {
+        restaurants: mockResults,
+        pagination: {
+          currentPage: query.page || 1,
+          totalPages: Math.ceil(mockResults.length / (query.limit || 50)),
+          totalItems: mockResults.length,
+          hasNext: false,
+          hasPrev: (query.page || 1) > 1,
+        },
+        searchQuery: query,
+        searchTime: Date.now(),
+        filters: {
+          availableGenres: ['居酒屋', 'イタリアン', '中華料理', 'フレンチ', 'カフェ', '寿司', 'ラーメン', '焼肉'],
+          priceRange: { min: 500, max: 15000 },
+          areas: ['東京駅', '新宿', '渋谷', '池袋', '銀座', '品川', '上野', '六本木'],
+        },
+      };
+    }
+
+    // 本番環境では実際のAPIを使用
     const params = new URLSearchParams();
     
     if (query.location) params.append('location', query.location);

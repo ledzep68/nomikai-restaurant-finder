@@ -20,7 +20,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   alt,
   width = '100%',
   height = 200,
-  fallbackSrc = '/images/restaurant-placeholder.jpg',
+  fallbackSrc,
   placeholder,
   className,
   style,
@@ -69,7 +69,8 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 
   const getImageSrc = () => {
     if (!src || isError) {
-      return fallbackSrc;
+      // フォールバック画像がない場合はプレースホルダー用のdata URLを使用
+      return fallbackSrc || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuODrOOCueODiOODqeODs+eUu+WDhzwvdGV4dD4KPC9zdmc+';
     }
     return src;
   };

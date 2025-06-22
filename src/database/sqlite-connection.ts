@@ -19,7 +19,10 @@ export class SQLiteConnection {
   }
 
   private initializeDatabase(): void {
-    const dbPath = process.env.DB_PATH || './database/nomikai.db';
+    const dbPath = process.env.DB_PATH;
+    if (!dbPath) {
+      throw new Error('DB_PATH environment variable is required');
+    }
     const dbDir = path.dirname(dbPath);
     
     // Create database directory if it doesn't exist

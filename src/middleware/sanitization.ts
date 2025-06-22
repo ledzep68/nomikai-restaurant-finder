@@ -31,6 +31,7 @@ const sanitizeString = (str: string): string => {
     .replace(/setInterval\s*\(/gi, '') // Remove setInterval
     .replace(/Function\s*\(/gi, '') // Remove Function constructor
     .trim();
+};
 
 const sanitizeValue = (value: unknown): unknown => {
   if (typeof value === 'string') {

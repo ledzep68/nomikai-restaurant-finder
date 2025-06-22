@@ -102,19 +102,19 @@ const SearchResults: React.FC = () => {
     );
   }
 
-  const totalPages = Math.ceil(results.meta.totalCount / results.meta.limit);
+  const totalPages = results.pagination?.totalPages || Math.ceil(results.restaurants.length / (query.limit || 20));
+  const totalCount = results.pagination?.totalItems || results.restaurants.length;
 
   return (
     <Box data-testid="search-results">
       {/* Results Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h6" gutterBottom>
-          検索結果 ({results.meta.totalCount}件)
+          検索結果 ({totalCount}件)
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          使用プラットフォーム: {results.meta.platformsUsed.join(', ')} |
-          検索時間: {results.meta.searchTime}ms |
-          {results.meta.cached ? 'キャッシュ' : 'リアルタイム'}
+          {results.restaurants.length}件表示中
+          {results.pagination && ` | ページ ${results.pagination.currentPage}/${results.pagination.totalPages}`}
         </Typography>
       </Box>
 
@@ -136,7 +136,7 @@ const SearchResults: React.FC = () => {
                 {/* Restaurant Image */}
                 <Box sx={{ position: 'relative' }}>
                   <LazyImage
-                    src={result.restaurant.images?.[0]}
+                    src={result.restaurant.imageUrl || result.restaurant.images?.[0]}
                     alt={result.restaurant.name}
                     height={200}
                     fallbackSrc="/images/restaurant-placeholder.jpg"
@@ -177,9 +177,9 @@ const SearchResults: React.FC = () => {
 
                   {/* Rating */}
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Rating value={result.totalScore} precision={0.1} readOnly size="small" />
+                    <Rating value={result.aggregatedScore || result.restaurant.rating} precision={0.1} readOnly size="small" />
                     <Typography variant="body2" sx={{ ml: 1 }}>
-                      {result.totalScore.toFixed(1)} (信頼度: {(result.confidence * 100).toFixed(0)}%)
+                      {(result.aggregatedScore || result.restaurant.rating).toFixed(1)} (信頼度: {(result.confidence * 100).toFixed(0)}%)
                     </Typography>
                   </Box>
 

@@ -39,10 +39,10 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
     watch,
   } = useForm<SearchFormData>({
     defaultValues: {
-      location: query.location || '',
+      location: query.location || '東京駅',
       genre: query.genre || '',
       priceMin: query.priceRange?.min || 0,
-      priceMax: query.priceRange?.max || 5000,
+      priceMax: query.priceRange?.max || 10000,
       capacity: query.capacity || 4,
     },
   });
@@ -59,7 +59,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
       },
       capacity: data.capacity,
       page: 1,
-      limit: 20,
+      limit: 50, // より多くの結果を取得
       sort: 'rating' as const,
     };
 
