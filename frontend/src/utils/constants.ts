@@ -1,7 +1,6 @@
-export const API_BASE_URL = 
-  ((global as any).importMeta?.env?.VITE_API_BASE_URL) || 
-  (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) || 
-  'http://localhost:3003/api';
+export const API_BASE_URL = process.env.NODE_ENV === 'test' 
+  ? 'http://localhost:5000/api'
+  : import.meta.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 export const ROUTES = {
   HOME: '/',
@@ -11,6 +10,7 @@ export const ROUTES = {
   RESTAURANT_DETAIL: '/restaurant/:id',
   PROFILE: '/profile',
   FAVORITES: '/favorites',
+  HISTORY: '/history',
 } as const;
 
 export const GENRES = [
@@ -68,9 +68,12 @@ export const PRICE_RANGES = [
 ] as const;
 
 export const SORT_OPTIONS = [
+  { value: 'comprehensive', label: '総合評価順' },
   { value: 'rating', label: '評価順' },
-  { value: 'price', label: '価格順' },
-  { value: 'distance', label: '距離順' },
+  { value: 'confidence', label: '信頼度順' },
+  { value: 'reviews', label: 'レビュー数順' },
+  { value: 'price', label: '価格安い順' },
+  { value: 'distance', label: '距離近い順' },
 ] as const;
 
 export const CAPACITIES = [
@@ -87,6 +90,34 @@ export const RECOMMENDATION_LABELS = {
   recommended: 'おすすめ',
   suitable: '適している',
 } as const;
+
+export const TOKYO_AREAS = [
+  { value: 'shibuya', label: '渋谷' },
+  { value: 'shinjuku', label: '新宿' },
+  { value: 'ginza', label: '銀座' },
+  { value: 'roppongi', label: '六本木' },
+  { value: 'harajuku', label: '原宿' },
+  { value: 'akasaka', label: '赤坂' },
+  { value: 'ikebukuro', label: '池袋' },
+  { value: 'ueno', label: '上野' },
+  { value: 'asakusa', label: '浅草' },
+  { value: 'tokyo_station', label: '東京駅' },
+  { value: 'shinagawa', label: '品川' },
+  { value: 'ebisu', label: '恵比寿' },
+] as const;
+
+export const RESTAURANT_FEATURES = [
+  { value: 'private_room', label: '個室あり' },
+  { value: 'all_you_can_drink', label: '飲み放題' },
+  { value: 'course_menu', label: 'コースメニュー' },
+  { value: 'late_night', label: '深夜営業' },
+  { value: 'non_smoking', label: '禁煙' },
+  { value: 'card_payment', label: 'カード決済' },
+  { value: 'parking', label: '駐車場' },
+  { value: 'wifi', label: 'WiFi' },
+  { value: 'takeout', label: 'テイクアウト' },
+  { value: 'delivery', label: 'デリバリー' },
+] as const;
 
 export const PLATFORM_LABELS = {
   hotpepper: 'ホットペッパー',

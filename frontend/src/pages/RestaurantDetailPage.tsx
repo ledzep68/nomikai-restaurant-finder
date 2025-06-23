@@ -38,6 +38,7 @@ import {
 import { LazyImage } from '@components/common/LazyImage';
 import { FavoriteButton } from '@components/common/FavoriteButton';
 import { LoadingSpinner } from '@components/common/LoadingSpinner';
+import { ComprehensiveRating } from '@components/restaurant/ComprehensiveRating';
 import { restaurantService } from '@services/restaurantService';
 import { Restaurant as RestaurantType } from '@types/restaurant';
 import {
@@ -55,7 +56,14 @@ interface TabPanelProps {
 function TabPanel({ children, value, index }: TabPanelProps) {
   return (
     <div hidden={value !== index} role="tabpanel">
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && (
+        <Box sx={{ 
+          p: { xs: 2, sm: 3 },
+          fontSize: { xs: '0.9rem', sm: '1rem' }
+        }}>
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -152,13 +160,32 @@ export const RestaurantDetailPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ 
+      py: { xs: 2, sm: 3, md: 4 },
+      px: { xs: 1, sm: 2 }
+    }}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ 
+        mb: { xs: 2, sm: 3 }, 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: { xs: 1, sm: 2 },
+        flexWrap: { xs: 'wrap', sm: 'nowrap' }
+      }}>
         <IconButton onClick={() => navigate(-1)} color="primary">
           <ArrowBack />
         </IconButton>
-        <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant={{ xs: 'h5', sm: 'h4' }} 
+          component="h1" 
+          sx={{ 
+            flexGrow: 1,
+            fontSize: { xs: '1.5rem', sm: '2rem' },
+            lineHeight: 1.2,
+            order: { xs: 3, sm: 0 },
+            width: { xs: '100%', sm: 'auto' }
+          }}
+        >
           {restaurant.name}
         </Typography>
         <FavoriteButton restaurantId={restaurant.id} size="large" />
@@ -168,23 +195,52 @@ export const RestaurantDetailPage: React.FC = () => {
       </Box>
 
       {/* Main Image */}
-      <Card sx={{ mb: 4 }}>
+      <Card sx={{ 
+        mb: { xs: 3, sm: 4 },
+        borderRadius: { xs: 1, sm: 2 }
+      }}>
         <LazyImage
           src={restaurant.images?.[0]}
           alt={restaurant.name}
           height={400}
           fallbackSrc="/images/restaurant-placeholder.jpg"
+          sx={{
+            height: { xs: 250, sm: 300, md: 400 },
+            objectFit: 'cover'
+          }}
         />
       </Card>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
         {/* Main Content */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={8}>
           <Card>
-            <Tabs value={tabValue} onChange={handleTabChange}>
-              <Tab icon={<Info />} label="基本情報" />
-              <Tab icon={<Reviews />} label="レビュー" />
-              <Tab icon={<Map />} label="アクセス" />
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange}
+              variant={{ xs: 'fullWidth', sm: 'standard' }}
+              sx={{
+                '& .MuiTab-root': {
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  minHeight: { xs: 48, sm: 64 }
+                }
+              }}
+            >
+              <Tab 
+                icon={<Info />} 
+                label="基本情報" 
+                iconPosition={{ xs: 'top', sm: 'start' }}
+              />
+              <Tab 
+                icon={<Reviews />} 
+                label="レビュー" 
+                iconPosition={{ xs: 'top', sm: 'start' }}
+              />
+              <Tab 
+                icon={<Map />} 
+                label="アクセス" 
+                iconPosition={{ xs: 'top', sm: 'start' }}
+              />
             </Tabs>
             
             <TabPanel value={tabValue} index={0}>
@@ -267,33 +323,42 @@ export const RestaurantDetailPage: React.FC = () => {
         </Grid>
 
         {/* Sidebar */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              レストラン評価
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Rating value={4.2} precision={0.1} readOnly />
-              <Typography variant="body1" sx={{ ml: 1 }}>
-                4.2
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              基于外部平台的综合评价
-            </Typography>
-          </Paper>
+        <Grid item xs={12} lg={4}>
+          <ComprehensiveRating 
+            restaurantId={restaurant.id} 
+            showDetails={true}
+            onRefresh={() => {
+              // 評価更新後の処理（必要に応じて実装）
+              console.log('Rating refreshed');
+            }}
+          />
 
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
+          <Paper sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            mb: { xs: 2, sm: 3 }
+          }}>
+            <Typography 
+              variant={{ xs: 'subtitle1', sm: 'h6' }} 
+              gutterBottom
+              sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+            >
               アクションパネル
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: { xs: 1.5, sm: 2 }
+            }}>
               <Button
                 variant="contained"
                 fullWidth
                 startIcon={<Phone />}
                 href={`tel:${restaurant.phone}`}
                 disabled={!restaurant.phone}
+                sx={{
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                }}
               >
                 電話予約
               </Button>
@@ -305,6 +370,10 @@ export const RestaurantDetailPage: React.FC = () => {
                   const query = encodeURIComponent(restaurant.address);
                   window.open(`https://maps.google.com/maps?q=${query}`, '_blank');
                 }}
+                sx={{
+                  minHeight: { xs: 44, sm: 40 },
+                  fontSize: { xs: '0.9rem', sm: '0.875rem' }
+                }}
               >
                 地図で見る
               </Button>
@@ -313,18 +382,30 @@ export const RestaurantDetailPage: React.FC = () => {
 
           {/* Additional Images */}
           {restaurant.images && restaurant.images.length > 1 && (
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper sx={{ 
+              p: { xs: 2, sm: 3 },
+              display: { xs: 'none', sm: 'block' }
+            }}>
+              <Typography 
+                variant={{ xs: 'subtitle1', sm: 'h6' }} 
+                gutterBottom
+                sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+              >
                 その他の写真
               </Typography>
               <Grid container spacing={1}>
                 {restaurant.images.slice(1, 5).map((image, index) => (
-                  <Grid item xs={6} key={index}>
+                  <Grid item xs={6} sm={4} key={index}>
                     <LazyImage
                       src={image}
                       alt={`${restaurant.name} 写真 ${index + 2}`}
                       height={100}
                       fallbackSrc="/images/restaurant-placeholder.jpg"
+                      sx={{
+                        borderRadius: 1,
+                        cursor: 'pointer',
+                        '&:hover': { opacity: 0.8 }
+                      }}
                     />
                   </Grid>
                 ))}

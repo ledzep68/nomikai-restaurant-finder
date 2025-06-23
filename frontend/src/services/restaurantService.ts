@@ -1,13 +1,83 @@
 import { apiService } from './api';
 import { mockApiService } from './mockApiService';
+import { ratingCache, generateQueryHash } from '@utils/cache';
 import { IntegratedSearchResult, Restaurant, Evaluation, EvaluationResult } from '@types/restaurant';
 import { SearchQuery } from '@types/search';
 
 // 開発環境でモックAPIを使用するかどうかの判定
-const USE_MOCK_API = process.env.NODE_ENV === 'development' && 
-  (process.env.REACT_APP_USE_MOCK_API === 'true' || !process.env.REACT_APP_API_URL);
+const USE_MOCK_API = false; // 実際のAPIを使用
 
 export const restaurantService = {
+  /**
+   * Get comprehensive rating for a restaurant
+   */
+  async getComprehensiveRating(restaurantId: string, refresh?: boolean): Promise<any> {
+    if (USE_MOCK_API) {
+      // モックデータを返す
+      return {
+        restaurantId,
+        restaurantName: 'Mock Restaurant',
+        aggregatedScore: 4.2,
+        confidence: 0.85,
+        totalReviews: 235,
+        platformRatings: [
+          {
+            platform: 'hotpepper',
+            rating: 4.3,
+            reviewCount: 150,
+            maxRating: 5,
+            normalizedScore: 0.86,
+            weight: 0.85,
+            lastUpdated: new Date().toISOString(),
+            url: `https://www.hotpepper.jp/str${restaurantId}/`,
+            isAvailable: true,
+          },
+          {
+            platform: 'tabelog',
+            rating: 3.8,
+            reviewCount: 85,
+            maxRating: 5,
+            normalizedScore: 0.76,
+            weight: 0.15,
+            lastUpdated: new Date().toISOString(),
+            url: `https://tabelog.com/tokyo/A1234/${restaurantId}/`,
+            isAvailable: true,
+          },
+          {
+            platform: 'google',
+            rating: 0,
+            reviewCount: 0,
+            maxRating: 5,
+            normalizedScore: 0,
+            weight: 0,
+            lastUpdated: new Date().toISOString(),
+            isAvailable: false,
+          },
+        ],
+        criteria: {
+          rating: 82,
+          reviewVolume: 78,
+          recency: 85,
+          consistency: 88,
+        },
+        recommendation: 'recommended',
+        lastCalculated: new Date().toISOString(),
+        reviewHighlights: {
+          mostMentioned: ['美味しい', '雰囲気が良い', 'コスパが良い'],
+          strengths: ['料理の質', 'サービス', '立地'],
+          improvements: ['混雑時の対応', '予約の取りづらさ'],
+        },
+      };
+    }
+
+    const params = new URLSearchParams();
+    if (refresh) params.append('refresh', 'true');
+    
+    const response = await apiService.get(
+      `/restaurants/${restaurantId}/comprehensive-rating?${params.toString()}`
+    );
+    return response.data;
+  },
   async search(query: SearchQuery): Promise<IntegratedSearchResult> {
     // 開発環境でモックAPIを使用
     if (USE_MOCK_API) {

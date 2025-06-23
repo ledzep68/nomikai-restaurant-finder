@@ -40,6 +40,12 @@ export interface EvaluationResult {
 
 export interface IntegratedSearchResult {
   restaurants: EvaluationResult[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
   meta: {
     totalCount: number;
     page: number;
@@ -52,7 +58,7 @@ export interface IntegratedSearchResult {
   attributions: {
     [platform: string]: string;
   };
-  legalNotices: {
+  legalNotices?: {
     dataUsage: string;
     privacyPolicy: string;
   };

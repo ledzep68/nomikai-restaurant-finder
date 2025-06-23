@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import SearchForm from '@components/search/SearchForm';
 import SearchResults from '@components/search/SearchResults';
+import { SearchResultsDebug } from '@components/search/SearchResultsDebug';
+import { TestSearchResults } from '@components/search/TestSearchResults';
 
 const SearchPage: React.FC = () => {
   return (
@@ -11,6 +13,8 @@ const SearchPage: React.FC = () => {
       </Typography>
       
       <SearchForm />
+      <SearchResultsDebug />
+      <TestSearchResults />
       <SearchResults />
     </Box>
   );

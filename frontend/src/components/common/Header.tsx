@@ -15,16 +15,21 @@ import {
   Logout,
   Login,
   PersonAdd,
+  Favorite,
+  History,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/index';
 import { logout } from '@store/authSlice';
+import { selectFavoritesCount } from '@store/favoritesSlice';
+import { FavoriteButton } from './FavoriteButton';
 import { ROUTES } from '@utils/constants';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const favoritesCount = useAppSelector(selectFavoritesCount);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -49,6 +54,11 @@ const Header: React.FC = () => {
   const handleFavorites = () => {
     handleClose();
     navigate(ROUTES.FAVORITES);
+  };
+
+  const handleHistory = () => {
+    handleClose();
+    navigate(ROUTES.HISTORY);
   };
 
   return (
@@ -96,8 +106,12 @@ const Header: React.FC = () => {
                 プロフィール
               </MenuItem>
               <MenuItem onClick={handleFavorites}>
-                <RestaurantMenu sx={{ mr: 1 }} />
-                お気に入り
+                <Favorite sx={{ mr: 1 }} />
+                お気に入り ({favoritesCount})
+              </MenuItem>
+              <MenuItem onClick={handleHistory}>
+                <History sx={{ mr: 1 }} />
+                検索履歴
               </MenuItem>
               <MenuItem onClick={handleLogout}>
                 <Logout sx={{ mr: 1 }} />

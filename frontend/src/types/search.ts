@@ -1,3 +1,5 @@
+import type { IntegratedSearchResult } from './restaurant';
+
 export interface SearchQuery {
   location: string;
   genre?: string;
@@ -8,7 +10,18 @@ export interface SearchQuery {
   capacity?: number | string;
   page?: number;
   limit?: number;
-  sort?: 'rating' | 'price' | 'distance';
+  sort?: 'rating' | 'price' | 'distance' | 'comprehensive' | 'reviews' | 'confidence';
+  rating?: {
+    min: number;
+    max: number;
+  };
+  openNow?: boolean;
+  hasParking?: boolean;
+  hasWiFi?: boolean;
+  acceptsCards?: boolean;
+  area?: string[];
+  cuisine?: string[];
+  features?: string[];
 }
 
 export interface SearchHistoryItem extends SearchQuery {
@@ -44,4 +57,12 @@ export interface SearchFormData {
   priceMin: number;
   priceMax: number;
   capacity: number | string;
+  ratingMin: number;
+  ratingMax: number;
+  sortBy: string;
+  openNow: boolean;
+  hasParking: boolean;
+  hasWiFi: boolean;
+  acceptsCards: boolean;
+  features: string[];
 }

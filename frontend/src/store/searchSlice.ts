@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { SearchState, SearchQuery, SearchFilters, SearchHistoryItem } from '@types/search';
-import { IntegratedSearchResult } from '@types/restaurant';
-import * as restaurantService from '@services/restaurantService';
+import type { SearchState, SearchQuery, SearchFilters, SearchHistoryItem } from '@types/search';
+import type { IntegratedSearchResult } from '@types/restaurant';
+import { restaurantService } from '@services/restaurantService';
 import { getErrorMessage } from '@utils/helpers';
 import { GENRES, PRICE_RANGES, CAPACITIES, SORT_OPTIONS } from '@utils/constants';
 
@@ -10,6 +10,26 @@ const initialFilters: SearchFilters = {
   priceRanges: [...PRICE_RANGES],
   capacities: [...CAPACITIES],
   sortOptions: [...SORT_OPTIONS],
+};
+
+// Load history from localStorage
+const loadHistoryFromStorage = (): SearchHistoryItem[] => {
+  try {
+    const stored = localStorage.getItem('nomikai_search_history');
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load search history from localStorage:', error);
+    return [];
+  }
+};
+
+// Save history to localStorage
+const saveHistoryToStorage = (history: SearchHistoryItem[]) => {
+  try {
+    localStorage.setItem('nomikai_search_history', JSON.stringify(history));
+  } catch (error) {
+    console.error('Failed to save search history to localStorage:', error);
+  }
 };
 
 const initialState: SearchState = {
@@ -21,7 +41,7 @@ const initialState: SearchState = {
   },
   results: null,
   filters: initialFilters,
-  history: [],
+  history: loadHistoryFromStorage(),
   loading: false,
   error: null,
 };
@@ -30,7 +50,7 @@ export const searchRestaurants = createAsyncThunk(
   'search/searchRestaurants',
   async (query: SearchQuery, { rejectWithValue }) => {
     try {
-      return await restaurantService.restaurantService.search(query);
+      return await restaurantService.search(query);
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
     }
@@ -76,9 +96,16 @@ const searchSlice = createSlice({
       if (state.history.length > 10) {
         state.history = state.history.slice(0, 10);
       }
+      
+      // Persist to localStorage
+      saveHistoryToStorage(state.history);
     },
     clearHistory: (state) => {
       state.history = [];
+      saveHistoryToStorage(state.history);
+    },
+    loadHistory: (state) => {
+      state.history = loadHistoryFromStorage();
     },
   },
   extraReducers: (builder) => {
@@ -107,6 +134,7 @@ export const {
   clearError,
   addToHistory,
   clearHistory,
+  loadHistory,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;
