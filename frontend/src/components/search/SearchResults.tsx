@@ -97,7 +97,7 @@ const SearchResults: React.FC = () => {
     );
   }
 
-  if (results.restaurants.length === 0) {
+  if (!results?.restaurants || results.restaurants.length === 0) {
     return (
       <Alert severity="warning">
         検索条件に一致するレストランが見つかりませんでした。
@@ -106,8 +106,8 @@ const SearchResults: React.FC = () => {
     );
   }
 
-  const totalPages = results.pagination?.totalPages || Math.ceil(results.restaurants.length / (query.limit || 20));
-  const totalCount = results.pagination?.totalItems || results.restaurants.length;
+  const totalPages = results.pagination?.totalPages || Math.ceil((results.restaurants?.length || 0) / (query.limit || 20));
+  const totalCount = results.pagination?.totalItems || results.restaurants?.length || 0;
 
   return (
     <Box data-testid="search-results">
@@ -117,7 +117,7 @@ const SearchResults: React.FC = () => {
         px: { xs: 1, sm: 0 }
       }}>
         <Typography 
-          variant={{ xs: 'h6', sm: 'h5' }} 
+          variant="h5" 
           gutterBottom
           sx={{ fontSize: responsiveFontSizes.xlarge }}
         >
@@ -128,7 +128,7 @@ const SearchResults: React.FC = () => {
           color="text.secondary"
           sx={{ fontSize: responsiveFontSizes.small }}
         >
-          {results.restaurants.length}件表示中
+          {results.restaurants?.length || 0}件表示中
           {results.pagination && (
             <Box component="span" sx={{ display: { xs: 'block', sm: 'inline' } }}>
               {` | ページ ${results.pagination.currentPage}/${results.pagination.totalPages}`}
@@ -138,13 +138,13 @@ const SearchResults: React.FC = () => {
       </Box>
 
       {/* Debug Cards - Hidden in production */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <Box sx={{ mb: 3, display: 'none' }}>
           <Typography variant="subtitle1" gutterBottom>
             デバッグ用簡易表示
           </Typography>
           <Grid container spacing={2}>
-            {results.restaurants.slice(0, 3).map((result: any, index: number) => (
+            {(results.restaurants || []).slice(0, 3).map((result: any, index: number) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <SimpleRestaurantCard restaurant={result} />
               </Grid>
@@ -155,7 +155,7 @@ const SearchResults: React.FC = () => {
 
       {/* Restaurant Cards */}
       <Grid container spacing={responsiveSpacing.medium} sx={{ mb: 4 }}>
-        {results.restaurants.map((result: any) => {
+        {(results.restaurants || []).map((result: any) => {
           // デバッグ用ログ
           console.log('Restaurant result:', result);
           
@@ -218,7 +218,7 @@ const SearchResults: React.FC = () => {
                 }}>
                   {/* Restaurant Name */}
                   <Typography 
-                    variant={{ xs: 'subtitle1', sm: 'h6' }} 
+                    variant="h6" 
                     component="h3" 
                     gutterBottom
                     sx={{ 
@@ -251,7 +251,7 @@ const SearchResults: React.FC = () => {
                       value={result.totalScore ? result.totalScore / 20 : restaurant.rating || 0} 
                       precision={0.1} 
                       readOnly 
-                      size={{ xs: 'small', sm: 'small' }}
+                      size="small"
                       sx={{ mr: 1 }}
                     />
                     <Typography 
@@ -378,7 +378,7 @@ const SearchResults: React.FC = () => {
                   justifyContent: { xs: 'stretch', sm: 'flex-start' }
                 }}>
                   <Button
-                    size={{ xs: 'medium', sm: 'small' }}
+                    size="small"
                     variant="contained"
                     onClick={() => navigate(`/restaurant/${restaurantId}`)}
                     data-testid={`view-detail-${restaurantId}`}
@@ -410,7 +410,7 @@ const SearchResults: React.FC = () => {
             page={results.meta.page}
             onChange={handlePageChange}
             color="primary"
-            size={{ xs: 'medium', sm: 'large' }}
+            size="large"
             data-testid="pagination"
             sx={{
               '& .MuiPaginationItem-root': {

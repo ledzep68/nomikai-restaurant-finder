@@ -52,7 +52,7 @@ export const SearchHistory: React.FC<SearchHistoryProps> = ({
   maxItems = 5,
 }) => {
   const dispatch = useAppDispatch();
-  const { history } = useAppSelector((state) => state.search);
+  const { history = [] } = useAppSelector((state) => state.search);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   const handleHistoryItemClick = async (historyItem: SearchHistoryItem) => {
@@ -235,11 +235,12 @@ export const SearchHistory: React.FC<SearchHistoryProps> = ({
                         </Box>
                       }
                       secondary={
-                        <Box sx={{ mt: 1 }}>
+                        <Box component="span" sx={{ display: 'block' }}>
                           {/* 検索条件の詳細 */}
-                          <Box sx={{ 
+                          <Box component="span" sx={{ 
                             display: 'flex', 
                             gap: 1, 
+                            mt: 1,
                             mb: 1,
                             flexWrap: 'wrap'
                           }}>
@@ -259,12 +260,13 @@ export const SearchHistory: React.FC<SearchHistoryProps> = ({
                           </Box>
                           
                           {/* タイムスタンプ */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Schedule 
                               fontSize="small" 
                               sx={{ color: 'text.disabled', fontSize: 14 }}
                             />
                             <Typography 
+                              component="span"
                               variant="caption" 
                               color="text.secondary"
                               sx={{ fontSize: '0.75rem' }}
@@ -274,6 +276,9 @@ export const SearchHistory: React.FC<SearchHistoryProps> = ({
                           </Box>
                         </Box>
                       }
+                      secondaryTypographyProps={{
+                        component: 'div'
+                      }}
                     />
                   </ListItemButton>
                 </ListItem>

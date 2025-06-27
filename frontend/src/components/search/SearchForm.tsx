@@ -59,7 +59,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
   const onSubmit = async (data: SearchFormData) => {
     const searchQuery = {
       location: data.location,
-      genre: data.genre || undefined,
+      genre: data.genre === '' ? undefined : data.genre,
       priceRange: {
         min: data.priceMin,
         max: data.priceMax,
@@ -126,7 +126,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
         mx: { xs: 1, sm: 0 }
       }}>
         <Typography 
-          variant={{ xs: 'h6', sm: 'h5' }} 
+          variant="h5" 
           component="h2" 
           gutterBottom
           sx={{ 
@@ -180,11 +180,13 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
                 <Controller
                   name="genre"
                   control={control}
+                  defaultValue=""
                   render={({ field }) => (
                     <Select
                       {...field}
                       label="ジャンル"
                       data-testid="genre-select"
+                      displayEmpty
                     >
                       <MenuItem value="">すべて</MenuItem>
                       {GENRES.map((genre) => (

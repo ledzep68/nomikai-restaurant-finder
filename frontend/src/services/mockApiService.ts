@@ -250,7 +250,7 @@ class MockApiService {
         imageUrl: restaurant.imageUrl,
         openingHours: '11:00-23:00',
         url: `https://hotpepper.jp/mock/${restaurant.id}`,
-        fetchedAt: new Date(),
+        fetchedAt: new Date().toISOString(),
       },
       platforms: [
         {
@@ -258,7 +258,7 @@ class MockApiService {
           rating: restaurant.rating,
           reviewCount: restaurant.reviewCount,
           confidence: 0.8 + Math.random() * 0.2,
-          lastUpdated: new Date(),
+          lastUpdated: new Date().toISOString(),
         }
       ],
       aggregatedScore: restaurant.rating,
@@ -266,7 +266,7 @@ class MockApiService {
       confidence: 0.8 + Math.random() * 0.2,
       dataCompleteness: 0.7 + Math.random() * 0.3,
       totalReviews: restaurant.reviewCount,
-      lastUpdated: new Date(),
+      lastUpdated: new Date().toISOString(),
     }));
   }
 

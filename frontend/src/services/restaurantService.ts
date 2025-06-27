@@ -5,7 +5,7 @@ import { IntegratedSearchResult, Restaurant, Evaluation, EvaluationResult } from
 import { SearchQuery } from '@types/search';
 
 // 開発環境でモックAPIを使用するかどうかの判定
-const USE_MOCK_API = false; // 実際のAPIを使用
+const USE_MOCK_API = import.meta.env.DEV || import.meta.env.VITE_USE_MOCK_API === 'true';
 
 export const restaurantService = {
   /**
@@ -118,8 +118,8 @@ export const restaurantService = {
     if (query.limit) params.append('limit', query.limit.toString());
     if (query.sort) params.append('sort', query.sort);
 
-    const response = await apiService.get<IntegratedSearchResult>(
-      `/restaurants/search?${params.toString()}`
+    const response = await apiService.get<any>(
+      `/restaurants/integrated-search?${params.toString()}`
     );
     return response.data;
   },

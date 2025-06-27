@@ -3,6 +3,7 @@ const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const axios = require('axios');
+const HotPepperApiClient = require('./hotpepper-api-client');
 
 const app = express();
 const PORT = 3003; // New port for integrated API
@@ -19,6 +20,13 @@ app.use(express.json());
 const USE_MOCK_API = process.env.USE_MOCK_API !== 'false';
 const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY;
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+
+// Initialize HotPepper API client
+let hotpepperClient = null;
+if (HOTPEPPER_API_KEY && !USE_MOCK_API) {
+  hotpepperClient = new HotPepperApiClient(HOTPEPPER_API_KEY);
+  console.log('HotPepper API client initialized');
+}
 
 // SQLite database connection
 const dbPath = path.join(__dirname, 'database', 'nomikai.db');
@@ -99,8 +107,8 @@ app.get('/api/restaurants/integrated-search', async (req, res) => {
       const apiPromises = [];
 
       // HotPepper API call
-      if (HOTPEPPER_API_KEY) {
-        apiPromises.push(fetchFromHotPepper({ location, genre, capacity }));
+      if (HOTPEPPER_API_KEY && hotpepperClient) {
+        apiPromises.push(fetchFromHotPepper({ location, genre, capacity, priceRange: { min: priceMin, max: priceMax } }));
       }
 
       // Google Places API call  
@@ -215,34 +223,59 @@ app.get('/api/restaurants/integrated-search', async (req, res) => {
 });
 
 // HotPepper API integration
-async function fetchFromHotPepper({ location, genre, capacity }) {
-  // This would be the actual HotPepper API call
-  // For now, return mock data with HotPepper format
-  console.log('Fetching from HotPepper API...');
-  
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return {
-    restaurants: [
-      {
-        id: 'hp_001',
-        name: 'HotPepper レストラン例',
-        genre: genre || 'japanese',
-        location: location || '東京',
-        address: '東京都中央区銀座1-1-1',
-        phone: '03-1111-2222',
-        price_range_min: 2000,
-        price_range_max: 4000,
-        latitude: 35.6762,
-        longitude: 139.6503,
-        avg_rating: 4.1,
-        total_reviews: 89,
-        source: 'hotpepper'
-      }
-    ],
-    platform: 'hotpepper'
-  };
+async function fetchFromHotPepper({ location, genre, capacity, priceRange }) {
+  if (!hotpepperClient) {
+    console.log('HotPepper API client not available, using fallback');
+    return { restaurants: [], platform: 'hotpepper_unavailable' };
+  }
+
+  try {
+    console.log('Fetching from HotPepper API...', { location, genre, capacity, priceRange });
+    
+    const restaurants = await hotpepperClient.searchRestaurants({
+      location,
+      genre,
+      budget: priceRange,
+      count: 20
+    });
+
+    console.log(`HotPepper API returned ${restaurants.length} restaurants`);
+    
+    return {
+      restaurants,
+      platform: 'hotpepper'
+    };
+    
+  } catch (error) {
+    console.error('HotPepper API error:', error.message);
+    
+    // フォールバックとしてモックデータを返す
+    return {
+      restaurants: [
+        {
+          id: 'hp_fallback_001',
+          name: 'HotPepper API エラー時のフォールバック店舗',
+          genre: genre || 'japanese',
+          address: '東京都中央区銀座1-1-1',
+          phone: '03-1111-2222',
+          priceRange: {
+            min: 2000,
+            max: 4000
+          },
+          location: {
+            lat: 35.6762,
+            lng: 139.6503
+          },
+          rating: 4.0,
+          reviewCount: 50,
+          source: 'hotpepper_fallback',
+          error: error.message
+        }
+      ],
+      platform: 'hotpepper_fallback',
+      error: error.message
+    };
+  }
 }
 
 // Google Places API integration  
