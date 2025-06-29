@@ -7,7 +7,7 @@ class ApiService {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      timeout: 10000,
+      timeout: 60000, // 60秒 - HotPepper APIレート制限対応
       headers: {
         'Content-Type': 'application/json',
       },

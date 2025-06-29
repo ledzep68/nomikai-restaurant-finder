@@ -11,6 +11,7 @@ import { authRouter } from '@/controllers/authController';
 import { restaurantRouter } from '@/controllers/restaurantController';
 import { healthRouter } from '@/controllers/healthController';
 import { monitoringRoutes } from '@/routes/monitoring';
+import { comprehensiveRatingRouter } from '@/controllers/comprehensiveRatingController';
 
 export class App {
   private app: Application;
@@ -57,6 +58,7 @@ export class App {
     this.app.use('/api/health', healthRouter);
     this.app.use('/api/auth', authRouter);
     this.app.use('/api/restaurants', restaurantRouter);
+    this.app.use('/api/restaurants', comprehensiveRatingRouter);
     this.app.use('/api/monitoring', monitoringRoutes);
 
     this.app.get('/', (req: Request, res: Response) => {

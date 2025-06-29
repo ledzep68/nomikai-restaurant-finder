@@ -135,18 +135,8 @@ export const UserFeedback: React.FC = () => {
     }
   };
 
-  const isValid = feedbackData.message?.trim().length >= 10;
+  const isValid = (feedbackData.message?.trim().length || 0) >= 10;
 
-  const getFeedbackIcon = (type: string) => {
-    switch (type) {
-      case 'bug':
-        return <BugReport />;
-      case 'suggestion':
-        return <Lightbulb />;
-      default:
-        return <ThumbUp />;
-    }
-  };
 
   const getFeedbackTitle = (type: string) => {
     switch (type) {
@@ -272,7 +262,7 @@ export const UserFeedback: React.FC = () => {
                       size="large"
                     />
                     <Typography variant="body2" color="text.secondary">
-                      {feedbackData.rating > 0 && `${feedbackData.rating}/5`}
+                      {(feedbackData.rating || 0) > 0 && `${feedbackData.rating}/5`}
                     </Typography>
                   </Box>
                 </Box>
@@ -284,7 +274,7 @@ export const UserFeedback: React.FC = () => {
                   カテゴリ
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {feedbackCategories[feedbackData.type || 'general'].map((category) => (
+                  {(feedbackCategories[feedbackData.type || 'general'] || []).map((category) => (
                     <Chip
                       key={category}
                       label={category}

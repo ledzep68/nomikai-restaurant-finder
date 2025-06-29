@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   UnifiedRating, 
   RatingDisplayOptions, 
-  PlatformRatingData 
+  PlatformRating 
 } from '@/types/platformAggregation';
 
 interface UnifiedRatingDisplayProps {
@@ -125,7 +125,7 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
       <div className="mt-4 space-y-2">
         <h4 className="text-sm font-medium text-gray-700">プラットフォーム別評価</h4>
         <div className="space-y-2">
-          {unifiedRating.platforms.map((platformData: PlatformRatingData) => (
+          {(unifiedRating.platforms || []).map((platformData: PlatformRating) => (
             <div key={platformData.platform} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {getPlatformIcon(platformData.platform)}
@@ -168,7 +168,7 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
           <div className="text-center">
             <div className="text-gray-500">データ完全性</div>
             <div className="font-medium">
-              {Math.round(unifiedRating.dataCompleteness * 100)}%
+              {Math.round((unifiedRating.dataCompleteness || 0) * 100)}%
             </div>
           </div>
         )}
@@ -179,12 +179,12 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
   if (options.format === 'compact') {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        {renderStars(unifiedRating.aggregatedScore, 'sm')}
+        {renderStars(unifiedRating.aggregatedScore || 0, 'sm')}
         <span className="text-sm font-medium">
-          {unifiedRating.aggregatedScore.toFixed(1)}
+          {(unifiedRating.aggregatedScore || 0).toFixed(1)}
         </span>
         <span className="text-xs text-gray-500">
-          ({unifiedRating.totalReviews}件)
+          ({(unifiedRating as any).totalReviews || 0}件)
         </span>
       </div>
     );
@@ -195,16 +195,16 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
       <div className={`border rounded-lg p-4 ${className}`}>
         <div className="text-center mb-4">
           <div className="text-2xl font-bold text-gray-900 mb-1">
-            {unifiedRating.aggregatedScore.toFixed(1)}
+            {(unifiedRating.aggregatedScore || 0).toFixed(1)}
           </div>
-          {renderStars(unifiedRating.aggregatedScore, 'lg')}
+          {renderStars(unifiedRating.aggregatedScore || 0 || 0, 'lg')}
           <div className="text-sm text-gray-600 mt-1">
-            統合評価 ({unifiedRating.totalReviews}件のレビュー)
+            統合評価 ({(unifiedRating as any).totalReviews || 0}件のレビュー)
           </div>
         </div>
         
         <div className="grid grid-cols-3 gap-4 text-center">
-          {unifiedRating.platforms.map((platformData: PlatformRatingData) => (
+          {(unifiedRating.platforms || []).map((platformData: PlatformRating) => (
             <div key={platformData.platform} className="border-l first:border-l-0 pl-4 first:pl-0">
               <div className="flex justify-center mb-1">
                 {getPlatformIcon(platformData.platform)}
@@ -227,10 +227,10 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
     <div className={`bg-white border rounded-lg p-4 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          {renderStars(unifiedRating.aggregatedScore, 'md')}
+          {renderStars(unifiedRating.aggregatedScore || 0 || 0, 'md')}
           <div>
             <div className="text-lg font-semibold">
-              {unifiedRating.aggregatedScore.toFixed(1)}
+              {(unifiedRating.aggregatedScore || 0).toFixed(1)}
             </div>
             <div className="text-sm text-gray-600">
               統合評価
@@ -239,7 +239,7 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
         </div>
         <div className="text-right">
           <div className="text-sm font-medium">
-            {unifiedRating.totalReviews}件
+            {(unifiedRating as any).totalReviews || 0}件
           </div>
           <div className="text-xs text-gray-500">
             レビュー総数
@@ -251,7 +251,7 @@ export const UnifiedRatingDisplay: React.FC<UnifiedRatingDisplayProps> = ({
       {renderMetrics()}
 
       <div className="mt-4 text-xs text-gray-500">
-        最終更新: {new Date(unifiedRating.lastUpdated).toLocaleString('ja-JP')}
+        最終更新: {new Date((unifiedRating as any).lastUpdated || Date.now()).toLocaleString('ja-JP')}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { SearchState, SearchQuery, SearchFilters, SearchHistoryItem } from '@types/search';
-import type { IntegratedSearchResult } from '@types/restaurant';
+import type { SearchState, SearchQuery, SearchFilters, SearchHistoryItem } from '../types/search';
+// import type { IntegratedSearchResult } from '../types/restaurant';
 import { restaurantService } from '@services/restaurantService';
 import { getErrorMessage } from '@utils/helpers';
 import { GENRES, PRICE_RANGES, CAPACITIES, SORT_OPTIONS } from '@utils/constants';
@@ -16,7 +16,22 @@ const initialFilters: SearchFilters = {
 const loadHistoryFromStorage = (): SearchHistoryItem[] => {
   try {
     const stored = localStorage.getItem('nomikai_search_history');
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    
+    const parsed = JSON.parse(stored);
+    // Validate that parsed data is an array
+    if (!Array.isArray(parsed)) {
+      console.warn('Invalid search history format, resetting');
+      return [];
+    }
+    
+    // Validate each history item
+    return parsed.filter(item => 
+      item && 
+      typeof item === 'object' && 
+      typeof item.location === 'string' &&
+      typeof item.timestamp === 'string'
+    );
   } catch (error) {
     console.error('Failed to load search history from localStorage:', error);
     return [];
@@ -50,8 +65,12 @@ export const searchRestaurants = createAsyncThunk(
   'search/searchRestaurants',
   async (query: SearchQuery, { rejectWithValue }) => {
     try {
-      return await restaurantService.search(query);
+      console.log('🔍 searchSlice: Calling restaurantService.search with:', query);
+      const result = await restaurantService.search(query);
+      console.log('🔍 searchSlice: Service returned:', result);
+      return result;
     } catch (error) {
+      console.error('❌ searchSlice: Service error:', error);
       return rejectWithValue(getErrorMessage(error));
     }
   }

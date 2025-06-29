@@ -1,6 +1,31 @@
-export const API_BASE_URL = process.env.NODE_ENV === 'test' 
-  ? 'http://localhost:5000/api'
-  : import.meta.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
+// API Base URL設定 - Viteプロキシ対応
+export const API_BASE_URL = (() => {
+  console.log('🔍 API_BASE_URL calculation:');
+  console.log('🔍 typeof process:', typeof process);
+  console.log('🔍 process.env.NODE_ENV:', typeof process !== 'undefined' ? process.env.NODE_ENV : 'undefined');
+  console.log('🔍 typeof window:', typeof window);
+  console.log('🔍 import.meta.env.VITE_API_BASE_URL:', import.meta.env?.VITE_API_BASE_URL);
+  
+  // Jest環境チェック
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    console.log('🔍 Using test API URL');
+    return 'http://localhost:3003/api';
+  }
+  // 開発環境ではViteプロキシを使用
+  if (typeof window !== 'undefined') {
+    console.log('🔍 Using Vite proxy API URL');
+    return '/api';  // Viteプロキシ経由
+  }
+  // その他の環境
+  try {
+    const url = import.meta.env?.VITE_API_BASE_URL || '/api';
+    console.log('🔍 Using env or default API URL:', url);
+    return url;
+  } catch {
+    console.log('🔍 Using fallback API URL');
+    return '/api';
+  }
+})();
 
 export const ROUTES = {
   HOME: '/',

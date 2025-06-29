@@ -12,6 +12,8 @@ import {
 import { RestaurantMenu, Search, Star } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@utils/constants';
+import { SEOHead } from '@components/seo/SEOHead';
+import { generateHomeSEO } from '@utils/seo';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const HomePage: React.FC = () => {
 
   return (
     <Box>
+      <SEOHead config={generateHomeSEO()} />
       {/* Hero Section */}
       <Paper
         elevation={3}

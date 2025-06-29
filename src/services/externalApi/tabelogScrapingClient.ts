@@ -29,7 +29,7 @@ export class TabelogScrapingClient extends BaseApiClient {
       maxRetries: 2,
       timeout: parseInt(process.env.TABELOG_TIMEOUT || '15000', 10),
       respectRobotsTxt: true,
-      userAgent: 'Nomikai-Personal-Aggregator/1.0 (Personal Use Only)',
+      userAgent: process.env.TABELOG_USER_AGENT || 'Nomikai-Personal-Aggregator/1.0 (Personal Use Only)',
       personalUse: {
         purposeDeclaration: 'Personal restaurant rating aggregation for individual use',
         nonCommercialUse: true,
@@ -43,8 +43,9 @@ export class TabelogScrapingClient extends BaseApiClient {
   }
 
   protected getDefaultHeaders(): Record<string, string> {
+    const userAgent = this.scrapingConfig?.userAgent || process.env.TABELOG_USER_AGENT || 'Nomikai-Personal-Aggregator/1.0 (Personal Use Only)';
     return {
-      'User-Agent': this.scrapingConfig.userAgent,
+      'User-Agent': userAgent,
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'ja,en;q=0.5',
       'Accept-Encoding': 'gzip, deflate',

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { AuthState, LoginRequest, RegisterRequest } from '@types/auth';
+import type { AuthState, LoginRequest, RegisterRequest } from '../types/auth';
 import { authService } from '@services/authService';
 import { getErrorMessage } from '@utils/helpers';
 

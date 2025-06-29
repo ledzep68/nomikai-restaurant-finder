@@ -17,12 +17,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 5175,
     host: 'localhost',
     strictPort: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3003',
         changeOrigin: true,
       },
     },

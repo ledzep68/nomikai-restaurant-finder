@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { RestaurantState } from '@types/restaurant';
+import type { RestaurantState } from '../types/restaurant';
 import { restaurantService } from '@services/restaurantService';
 import { getErrorMessage } from '@utils/helpers';
 

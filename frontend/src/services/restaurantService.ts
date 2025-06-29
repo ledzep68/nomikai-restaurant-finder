@@ -4,8 +4,15 @@ import { ratingCache, generateQueryHash } from '@utils/cache';
 import { IntegratedSearchResult, Restaurant, Evaluation, EvaluationResult } from '@types/restaurant';
 import { SearchQuery } from '@types/search';
 
-// 開発環境でモックAPIを使用するかどうかの判定
-const USE_MOCK_API = import.meta.env.DEV || import.meta.env.VITE_USE_MOCK_API === 'true';
+// 実API使用の判定 - 環境変数で制御
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true';
+
+// デバッグ情報追加
+console.log('🔍 Environment Debug:');
+console.log('VITE_USE_MOCK_API:', import.meta.env.VITE_USE_MOCK_API);
+console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('USE_MOCK_API:', USE_MOCK_API);
+console.log('All import.meta.env:', import.meta.env);
 
 export const restaurantService = {
   /**
@@ -79,9 +86,12 @@ export const restaurantService = {
     return response.data;
   },
   async search(query: SearchQuery): Promise<IntegratedSearchResult> {
+    console.log('🔍 Search called with query:', query);
+    console.log('🔍 USE_MOCK_API:', USE_MOCK_API);
+    
     // 開発環境でモックAPIを使用
     if (USE_MOCK_API) {
-      console.log('Using mock API for restaurant search');
+      console.log('✅ Using mock API for restaurant search');
       const mockResults = await mockApiService.searchRestaurants(query);
       
       // IntegratedSearchResult形式に変換
@@ -105,6 +115,7 @@ export const restaurantService = {
     }
 
     // 本番環境では実際のAPIを使用
+    console.log('✅ Using real API for restaurant search');
     const params = new URLSearchParams();
     
     if (query.location) params.append('location', query.location);
@@ -118,10 +129,32 @@ export const restaurantService = {
     if (query.limit) params.append('limit', query.limit.toString());
     if (query.sort) params.append('sort', query.sort);
 
-    const response = await apiService.get<any>(
-      `/restaurants/integrated-search?${params.toString()}`
-    );
-    return response.data;
+    const apiUrl = `/restaurants/integrated-search?${params.toString()}`;
+    console.log('🌐 API URL:', apiUrl);
+    console.log('🌐 Full URL:', window.location.origin + '/api' + apiUrl);
+    
+    const response = await apiService.get<any>(apiUrl);
+    console.log('🌐 API Response:', response.data);
+    
+    // APIレスポンスをIntegratedSearchResult形式に変換
+    const apiData = response.data;
+    return {
+      restaurants: apiData.data?.restaurants || [],
+      pagination: {
+        currentPage: apiData.data?.meta?.page || query.page || 1,
+        totalPages: Math.ceil((apiData.data?.meta?.totalCount || 0) / (query.limit || 20)),
+        totalItems: apiData.data?.meta?.totalCount || 0,
+        hasNext: (apiData.data?.meta?.page || 1) < Math.ceil((apiData.data?.meta?.totalCount || 0) / (query.limit || 20)),
+        hasPrev: (apiData.data?.meta?.page || 1) > 1,
+      },
+      searchQuery: query,
+      searchTime: apiData.data?.meta?.searchTime || Date.now(),
+      filters: {
+        availableGenres: ['居酒屋', 'イタリアン', '中華料理', 'フレンチ', 'カフェ', '寿司', 'ラーメン', '焼肉'],
+        priceRange: { min: 500, max: 15000 },
+        areas: ['東京駅', '新宿', '渋谷', '池袋', '銀座', '品川', '上野', '六本木'],
+      },
+    };
   },
 
   async getRestaurant(id: string): Promise<Restaurant> {

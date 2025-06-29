@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { SEOHead } from '@components/seo/SEOHead';
+import { generateHistorySEO } from '@utils/seo';
 import {
   Container,
   Typography,
@@ -181,6 +183,7 @@ const HistoryPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <SEOHead config={generateHistorySEO()} />
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           <History sx={{ mr: 1, verticalAlign: 'middle' }} />

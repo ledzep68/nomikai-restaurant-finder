@@ -16,6 +16,12 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        // Date オブジェクトを含む可能性のあるパスを無視
+        ignoredPaths: [
+          'search.results.restaurants',
+          'restaurant.currentRestaurant.fetchedAt',
+          'favorites.items',
+        ],
       },
     }),
   devTools: process.env.NODE_ENV === 'development',

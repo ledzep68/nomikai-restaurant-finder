@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { SEOHead } from '@components/seo/SEOHead';
+import { generateFavoritesSEO } from '@utils/seo';
 import {
   Container,
   Typography,
@@ -166,6 +168,7 @@ const FavoritesPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <SEOHead config={generateFavoritesSEO()} />
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           <Favorite sx={{ mr: 1, verticalAlign: 'middle' }} />

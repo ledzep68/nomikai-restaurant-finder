@@ -225,7 +225,7 @@ class ErrorBoundary extends Component<Props, State> {
             </Stack>
 
             {/* 開発環境でのみエラー詳細を表示 */}
-            {process.env.NODE_ENV === 'development' && error && (
+            {import.meta.env.DEV && error && (
               <Accordion sx={{ mt: 2, textAlign: 'left' }}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { SEOHead } from '@components/seo/SEOHead';
+import { generateRestaurantSEO } from '@utils/seo';
 import {
   Box,
   Container,
@@ -164,6 +166,7 @@ export const RestaurantDetailPage: React.FC = () => {
       py: { xs: 2, sm: 3, md: 4 },
       px: { xs: 1, sm: 2 }
     }}>
+      <SEOHead config={generateRestaurantSEO(restaurant, comprehensiveRating)} />
       {/* Header */}
       <Box sx={{ 
         mb: { xs: 2, sm: 3 }, 

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レストラン詳細 - Nomikai Restaurant Finder</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .back-button {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-button:hover {
+            background-color: #555;
+        }
+        
+        .restaurant-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .restaurant-name {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .comprehensive-rating {
+            background: #f8f9fa;
+            border: 1px solid #e3e6ea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .comprehensive-rating h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .rating-score {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            color: #1976d2;
+            margin: 20px 0;
+        }
+        
+        .platform-ratings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .platform-rating {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .platform-rating h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .platform-rating .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .confidence-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            background: linear-gradient(90deg, #4caf50, #2196f3);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .info-section h4 {
+            margin-top: 0;
+        }
+        
+        .api-test {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .api-button {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .api-button:hover {
+            background-color: #1976d2;
+        }
+        
+        #rating-result {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">← 戻る</a>
+        
+        <div class="restaurant-header">
+            <div class="restaurant-name" id="restaurantName">レストラン名</div>
+            <div id="restaurantId" style="color: #666; font-size: 0.9em;"></div>
+        </div>
+        
+        <div class="comprehensive-rating">
+            <h3>🌟 総合評価</h3>
+            
+            <div class="rating-score" id="aggregatedScore">--.-</div>
+            
+            <div style="text-align: center; margin: 10px 0;">
+                <span style="color: #666;">5.0点満点</span>
+            </div>
+            
+            <div style="text-align: center; margin: 15px 0;">
+                <strong>信頼度: <span id="confidencePercent">--%</span></strong>
+            </div>
+            
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+            </div>
+            
+            <div class="platform-ratings" id="platformRatings">
+                <!-- プラットフォーム別評価がここに表示されます -->
+            </div>
+            
+            <div class="info-section">
+                <h4>📊 評価基準</h4>
+                <div id="criteriaDetails">
+                    <!-- 評価基準の詳細がここに表示されます -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="api-test">
+            <h3>API総合評価テスト</h3>
+            <button class="api-button" id="loadRatingBtn">総合評価を読み込み</button>
+            <button class="api-button" onclick="refreshRating()">評価を更新</button>
+            <div id="rating-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // URLパラメータから情報を取得
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id') || 'mock-1',
+                name: params.get('name') || 'テストレストラン'
+            };
+        }
+
+        // ページ初期化
+        function initializePage() {
+            const params = getUrlParams();
+            document.getElementById('restaurantName').textContent = params.name;
+            document.getElementById('restaurantId').textContent = `レストランID: ${params.id}`;
+            
+            // 総合評価を自動読み込み
+            loadComprehensiveRating(params.id);
+        }
+
+        // 総合評価データを読み込み
+        async function loadComprehensiveRating(restaurantId) {
+            const resultDiv = document.getElementById('rating-result');
+            resultDiv.textContent = '総合評価を読み込み中...';
+            
+            try {
+                const response = await fetch(`http://localhost:3001/api/restaurants/${restaurantId}/comprehensive-rating`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                const data = result.data;
+                
+                // 総合スコア表示
+                document.getElementById('aggregatedScore').textContent = data.aggregatedScore.toFixed(1);
+                
+                // 信頼度表示
+                const confidencePercent = Math.round(data.confidence * 100);
+                document.getElementById('confidencePercent').textContent = `${confidencePercent}%`;
+                document.getElementById('confidenceFill').style.width = `${confidencePercent}%`;
+                
+                // プラットフォーム別評価表示
+                displayPlatformRatings(data.platformRatings);
+                
+                // 評価基準表示
+                displayCriteria(data.criteria);
+                
+                resultDiv.textContent = `✅ 総合評価読み込み成功!\n${JSON.stringify(data, null, 2)}`;
+                
+            } catch (error) {
+                console.error('総合評価の読み込みに失敗:', error);
+                resultDiv.textContent = `❌ 総合評価読み込み失敗:\n${error.message}`;
+                
+                // エラー時はモックデータを表示
+                displayMockRating();
+            }
+        }
+
+        // プラットフォーム別評価を表示
+        function displayPlatformRatings(platformRatings) {
+            const container = document.getElementById('platformRatings');
+            
+            const platformLabels = {
+                hotpepper: '🌶️ HotPepper',
+                tabelog: '🍽️ 食べログ',
+                google: '🌐 Google',
+                retty: '📝 Retty'
+            };
+            
+            container.innerHTML = platformRatings.map(platform => {
+                const label = platformLabels[platform.platform] || platform.platform;
+                const available = platform.isAvailable ? '✅' : '❌';
+                
+                return `
+                    <div class="platform-rating">
+                        <h4>${label} ${available}</h4>
+                        <div class="score">${platform.rating.toFixed(1)}</div>
+                        <div style="font-size: 0.8em; color: #666;">
+                            ${platform.reviewCount}件のレビュー<br>
+                            重み: ${(platform.weight * 100).toFixed(0)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 評価基準を表示
+        function displayCriteria(criteria) {
+            const container = document.getElementById('criteriaDetails');
+            
+            const criteriaLabels = {
+                rating: '⭐ 評価スコア',
+                reviewVolume: '📊 レビュー数',
+                recency: '🕐 最新性',
+                consistency: '📈 一貫性'
+            };
+            
+            container.innerHTML = Object.entries(criteria).map(([key, value]) => {
+                const label = criteriaLabels[key] || key;
+                return `
+                    <div style="margin: 8px 0; display: flex; align-items: center;">
+                        <span style="width: 120px;">${label}:</span>
+                        <div style="flex: 1; background: #e0e0e0; border-radius: 10px; height: 8px; margin: 0 10px;">
+                            <div style="background: #2196f3; height: 100%; border-radius: 10px; width: ${value}%;"></div>
+                        </div>
+                        <span style="width: 40px; text-align: right;">${value}%</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // モックデータを表示（APIが利用できない場合）
+        function displayMockRating() {
+            const mockData = {
+                aggregatedScore: 4.2,
+                confidence: 0.85,
+                platformRatings: [
+                    {
+                        platform: 'hotpepper',
+                        rating: 4.3,
+                        reviewCount: 150,
+                        weight: 0.85,
+                        isAvailable: true
+                    },
+                    {
+                        platform: 'tabelog',
+                        rating: 3.8,
+                        reviewCount: 85,
+                        weight: 0.15,
+                        isAvailable: true
+                    },
+                    {
+                        platform: 'google',
+                        rating: 0,
+                        reviewCount: 0,
+                        weight: 0,
+                        isAvailable: false
+                    }
+                ],
+                criteria: {
+                    rating: 82,
+                    reviewVolume: 78,
+                    recency: 85,
+                    consistency: 88
+                }
+            };
+            
+            document.getElementById('aggregatedScore').textContent = mockData.aggregatedScore.toFixed(1);
+            
+            const confidencePercent = Math.round(mockData.confidence * 100);
+            document.getElementById('confidencePercent').textContent = `${confidencePercent}%`;
+            document.getElementById('confidenceFill').style.width = `${confidencePercent}%`;
+            
+            displayPlatformRatings(mockData.platformRatings);
+            displayCriteria(mockData.criteria);
+        }
+
+        // 評価を更新
+        function refreshRating() {
+            const params = getUrlParams();
+            loadComprehensiveRating(params.id);
+        }
+
+        // ページ読み込み完了時に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            
+            // ボタンにイベントリスナーを追加
+            document.getElementById('loadRatingBtn').addEventListener('click', function() {
+                const params = getUrlParams();
+                loadComprehensiveRating(params.id);
+            });
+            
+            console.log('レストラン詳細ページが読み込まれました');
+        });
+    </script>
+</body>
+</html>

@@ -16,7 +16,7 @@ interface CacheConfig {
 export class Cache<T = any> {
   private cache = new Map<string, CacheItem<T>>();
   private config: Required<CacheConfig>;
-  private compressionSupported: boolean;
+  // private compressionSupported: boolean;
 
   constructor(config: CacheConfig = {}) {
     this.config = {
@@ -27,7 +27,7 @@ export class Cache<T = any> {
       storageKey: config.storageKey || 'nomikai_cache',
     };
     
-    this.compressionSupported = typeof CompressionStream !== 'undefined';
+    // this.compressionSupported = typeof CompressionStream !== 'undefined';
     
     if (this.config.enablePersistence) {
       this.loadFromStorage();

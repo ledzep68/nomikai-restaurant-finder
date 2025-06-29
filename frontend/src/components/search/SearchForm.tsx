@@ -57,9 +57,21 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
   const watchedLocation = watch('location');
 
   const onSubmit = async (data: SearchFormData) => {
+    console.log('🔍 Form submitted with data:', data);
+    
+    // Convert genre value to Japanese label for backend
+    const genreLabel = data.genre === '' ? undefined : 
+      GENRES.find(g => g.value === data.genre)?.label || data.genre;
+    
+    console.log('🔍 Genre conversion:', { 
+      original: data.genre, 
+      converted: genreLabel,
+      genreOptions: GENRES.slice(0, 5) // First 5 for debugging
+    });
+    
     const searchQuery = {
       location: data.location,
-      genre: data.genre === '' ? undefined : data.genre,
+      genre: genreLabel,
       priceRange: {
         min: data.priceMin,
         max: data.priceMax,
@@ -79,6 +91,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
       features: data.features,
     };
 
+    console.log('🔍 Final search query:', searchQuery);
+
     // Update Redux state
     dispatch(setQuery(searchQuery));
     
@@ -87,10 +101,13 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
 
     try {
       // Execute search
-      await dispatch(searchRestaurants(searchQuery)).unwrap();
+      console.log('🔍 Dispatching searchRestaurants...');
+      const result = await dispatch(searchRestaurants(searchQuery)).unwrap();
+      console.log('🔍 Search result:', result);
       onSearch?.();
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error('❌ Search failed:', error);
+      console.error('❌ Error details:', error.stack);
     }
   };
 
@@ -312,7 +329,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
                     minHeight: { xs: 44, sm: 36 }
                   }}
                 >
-                  {loading ? '検索中...' : '検索'}
+                  {loading ? '検索中（最大60秒）...' : '検索'}
                 </Button>
               </Box>
             </Grid>

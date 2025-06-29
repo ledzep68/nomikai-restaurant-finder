@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
@@ -10,11 +11,29 @@ const PORT = 3003; // New port for integrated API
 
 // CORS setup
 app.use(cors({
-  origin: ['http://localhost:8090', 'http://localhost:5173', 'http://127.0.0.1:8090', 'http://localhost:8091'],
-  credentials: true
+  origin: [
+    'http://localhost:8090', 
+    'http://localhost:5173', 
+    'http://localhost:5175',  // Vite dev server port
+    'http://localhost:5177',  // New Vite dev server port
+    'http://127.0.0.1:8090', 
+    'http://localhost:8091'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
+
+// プリフライトリクエスト対応
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
 
 // Environment variables (would come from .env in production)
 const USE_MOCK_API = process.env.USE_MOCK_API !== 'false';
@@ -111,10 +130,10 @@ app.get('/api/restaurants/integrated-search', async (req, res) => {
         apiPromises.push(fetchFromHotPepper({ location, genre, capacity, priceRange: { min: priceMin, max: priceMax } }));
       }
 
-      // Google Places API call  
-      if (GOOGLE_PLACES_API_KEY) {
-        apiPromises.push(fetchFromGooglePlaces({ location, genre }));
-      }
+      // Google Places API call (無効化 - 実装未完了)
+      // if (GOOGLE_PLACES_API_KEY) {
+      //   apiPromises.push(fetchFromGooglePlaces({ location, genre }));
+      // }
 
       try {
         const apiResults = await Promise.allSettled(apiPromises);
@@ -145,13 +164,18 @@ app.get('/api/restaurants/integrated-search', async (req, res) => {
     let filteredRestaurants = allRestaurants;
     
     if (location) {
-      filteredRestaurants = filteredRestaurants.filter(r => 
-        r.location?.includes(location) || r.address?.includes(location)
-      );
+      filteredRestaurants = filteredRestaurants.filter(r => {
+        const locationStr = typeof r.location === 'string' ? r.location : '';
+        const addressStr = r.address || '';
+        return locationStr.includes(location) || addressStr.includes(location);
+      });
     }
     
     if (genre) {
-      filteredRestaurants = filteredRestaurants.filter(r => r.genre === genre);
+      filteredRestaurants = filteredRestaurants.filter(r => {
+        const restaurantGenre = r.genre || '';
+        return restaurantGenre.includes(genre) || genre.includes(restaurantGenre);
+      });
     }
 
     // Transform to frontend format

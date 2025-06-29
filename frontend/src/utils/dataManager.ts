@@ -1,7 +1,7 @@
 import { ratingCache, generateQueryHash } from './cache';
 import { realtimeManager } from './realtime';
 import { restaurantService } from '@services/restaurantService';
-import type { SearchQuery } from '@types/search';
+import type { SearchQuery } from '../types/search';
 
 interface DataFetchOptions {
   useCache?: boolean;
@@ -26,7 +26,9 @@ export class DataManager {
   };
 
   private constructor() {
-    this.initializeRealtime();
+    // WebSocket機能は完全に無効化
+    console.log('DataManager: WebSocket functionality is disabled');
+    // this.initializeRealtime();
   }
 
   static getInstance(): DataManager {
@@ -272,11 +274,11 @@ export class DataManager {
   }
 
   private async refreshStaleData(): Promise<void> {
-    const cacheKeys = ratingCache.keys();
+    const cacheKeys = (ratingCache as any).keys?.() || [];
     const staleKeys: string[] = [];
 
     // 古いデータを特定（実装を簡素化のため、ここでは一部のみ）
-    cacheKeys.forEach(key => {
+    cacheKeys.forEach((key: string) => {
       if (key.startsWith('rating:') && Math.random() < 0.1) { // 10%の確率で更新
         staleKeys.push(key);
       }
@@ -303,6 +305,12 @@ export class DataManager {
   }
 
   private initializeRealtime(): void {
+    // WebSocket機能は完全に無効化されています
+    console.log('WebSocket realtime functionality is disabled');
+    return;
+    
+    // 以下のコードは実行されません
+    /*
     // リアルタイム更新のリスナー設定
     realtimeManager.on('rating_updated', (payload: any) => {
       console.log('Real-time rating update received:', payload);
@@ -324,6 +332,7 @@ export class DataManager {
     realtimeManager.on('disconnected', () => {
       console.log('Real-time connection lost');
     });
+    */
   }
 }
 

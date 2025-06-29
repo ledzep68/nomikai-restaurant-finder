@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import {
   Close,
-  Wifi,
   WifiOff,
   Refresh,
   ExpandMore,
@@ -208,7 +207,7 @@ export const NetworkErrorHandler: React.FC<NetworkErrorHandlerProps> = ({
 
         {isRetrying && (
           <Box sx={{ mb: 1 }}>
-            <LinearProgress size="small" />
+            <LinearProgress />
             <Typography variant="caption" sx={{ mt: 0.5, display: 'block' }}>
               再試行中...
             </Typography>

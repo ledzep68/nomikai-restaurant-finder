@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    <div id="status">Testing...</div>
+    <div id="results"></div>
+    
+    <script>
+        console.log('Debug script starting...');
+        
+        // Test if we can access the main app
+        fetch('/src/main.tsx')
+            .then(response => response.text())
+            .then(data => {
+                console.log('✅ main.tsx accessible');
+                document.getElementById('status').innerHTML = '✅ main.tsx accessible';
+                
+                // Test if we can access the search functionality
+                return fetch('/src/services/restaurantService.ts');
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('✅ restaurantService accessible');
+                const status = document.getElementById('status');
+                status.innerHTML += '<br>✅ restaurantService accessible';
+                
+                if (data.includes('USE_MOCK_API')) {
+                    status.innerHTML += '<br>✅ Mock API configuration found';
+                    console.log('✅ Mock API configuration found');
+                } else {
+                    status.innerHTML += '<br>❌ Mock API configuration missing';
+                    console.log('❌ Mock API configuration missing');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                document.getElementById('status').innerHTML = '❌ Error: ' + error.message;
+            });
+    </script>
+</body>
+</html>

@@ -22,7 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@store/index';
 import { logout } from '@store/authSlice';
 import { selectFavoritesCount } from '@store/favoritesSlice';
-import { FavoriteButton } from './FavoriteButton';
 import { ROUTES } from '@utils/constants';
 
 const Header: React.FC = () => {

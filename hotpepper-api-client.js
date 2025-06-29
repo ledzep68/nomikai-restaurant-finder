@@ -1,12 +1,14 @@
 // HotPepper API クライアント実装
 const axios = require('axios');
+const AreaCodeService = require('./services/areaCodeService');
 
 class HotPepperApiClient {
   constructor(apiKey) {
     this.apiKey = apiKey;
     this.baseUrl = 'https://webservice.recruit.co.jp/hotpepper/gourmet/v1/';
-    this.rateLimitDelay = 30000; // 30秒（2リクエスト/分制限対応）
+    this.rateLimitDelay = 5000; // 5秒間隔（安全なレート制限）
     this.lastRequestTime = 0;
+    this.areaCodeService = new AreaCodeService();
   }
 
   // レート制限チェック
@@ -23,34 +25,35 @@ class HotPepperApiClient {
     this.lastRequestTime = Date.now();
   }
 
-  // エリアコード取得
-  getAreaCode(location) {
-    const areaCodes = {
-      '東京': 'Z011',
-      '東京駅': 'Y005',
-      '新宿': 'Y002',
-      '渋谷': 'Y003',
-      '池袋': 'Y004', 
-      '銀座': 'Y005',
-      '品川': 'Y006',
-      '上野': 'Y007',
-      '六本木': 'Y008',
-      '表参道': 'Y009',
-      '恵比寿': 'Y010'
-    };
-    
-    // 部分マッチで検索
-    for (const [area, code] of Object.entries(areaCodes)) {
-      if (location.includes(area)) {
-        return code;
-      }
+  // エリアコード取得（データベース経由）
+  async getAreaCode(location) {
+    try {
+      const result = await this.areaCodeService.getAreaCode(location);
+      return result.area_code;
+    } catch (error) {
+      console.error('Area code lookup error:', error);
+      return 'Z011'; // デフォルト：東京
     }
-    
-    return 'Z011'; // デフォルト：東京
   }
 
   // ジャンルコード取得
   getGenreCode(genre) {
+    // 英語→日本語マッピング
+    const englishToJapanese = {
+      'izakaya': '居酒屋',
+      'italian': 'イタリアン', 
+      'chinese': '中華料理',
+      'french': 'フレンチ',
+      'cafe': 'カフェ',
+      'sushi': '寿司',
+      'ramen': 'ラーメン',
+      'yakiniku': '焼肉',
+      'japanese': '和食',
+      'korean': '韓国料理',
+      'thai': 'タイ料理',
+      'bar': 'バー'
+    };
+    
     const genreCodes = {
       '居酒屋': 'G001',
       'イタリアン': 'G006',
@@ -66,7 +69,28 @@ class HotPepperApiClient {
       'バー': 'G012'
     };
     
-    return genreCodes[genre] || undefined;
+    // 英語の場合は日本語に変換
+    const japaneseGenre = englishToJapanese[genre?.toLowerCase()] || genre;
+    
+    return genreCodes[japaneseGenre] || undefined;
+  }
+
+  // 地名のバリエーション取得（フィルタリング用）
+  getLocationVariants(location) {
+    const variants = {
+      '渋谷': ['渋谷区', 'shibuya'],
+      'shibuya': ['渋谷', '渋谷区'],
+      '新宿': ['新宿区', 'shinjuku'],  
+      'shinjuku': ['新宿', '新宿区'],
+      '池袋': ['豊島区', 'ikebukuro'],
+      'ikebukuro': ['池袋', '豊島区'],
+      '銀座': ['中央区', 'ginza'],
+      'ginza': ['銀座', '中央区'],
+      '六本木': ['港区', 'roppongi'],
+      'roppongi': ['六本木', '港区']
+    };
+    
+    return variants[location] || [location];
   }
 
   // レストラン検索
@@ -81,10 +105,24 @@ class HotPepperApiClient {
         start: 1
       };
       
-      // エリア指定
+      // エリア指定（正しいエリアコードで検索）
       if (location) {
-        const areaCode = this.getAreaCode(location);
-        params.large_area = areaCode;
+        const areaResult = await this.areaCodeService.getAreaCode(location);
+        const areaCode = areaResult.area_code;
+        
+        // エリアタイプに応じて適切なパラメータを設定
+        if (areaCode.startsWith('Y')) {
+          // 中エリアの場合
+          params.middle_area = areaCode;
+          console.log(`Location: ${location} -> Middle area: ${areaCode} (${areaResult.area_name})`);
+        } else if (areaCode.startsWith('Z')) {
+          // 大エリアの場合
+          params.large_area = areaCode;
+          console.log(`Location: ${location} -> Large area: ${areaCode} (${areaResult.area_name})`);
+        }
+        
+        // フィルタリング不要（正しいエリアコードで直接検索）
+        this.requestedLocation = null;
       }
       
       // ジャンル指定
@@ -117,7 +155,10 @@ class HotPepperApiClient {
       const shops = response.data.results?.shop || [];
       console.log(`HotPepper API returned ${shops.length} restaurants`);
       
-      return this.transformToStandardFormat(shops);
+      const transformedShops = this.transformToStandardFormat(shops);
+      
+      // フィルタリングは不要（正しいエリアコードで直接検索済み）
+      return transformedShops;
       
     } catch (error) {
       console.error('HotPepper API Error:', error.message);
